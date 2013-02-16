@@ -2,13 +2,13 @@
 
 exports.Queue = Queue;
 
-function Queue() {this.items = []; this.history = {};}
+function Queue() {this._items = []; this._history = {};}
 
 /**
  * Add an item to the queue.
  */
 Queue.prototype.add = function (uri, callback) {
-    if (this.history[uri]) {return callback(null);}
+    if (this._history[uri]) {return callback(null);}
 
     var item = {
         queue: this, 
@@ -18,8 +18,8 @@ Queue.prototype.add = function (uri, callback) {
         error: undefined
     };
 
-    this.items.push(item);
-    this.history[uri] = true;
+    this._items.push(item);
+    this._history[uri] = true;
     
     callback(null, item);
 };
@@ -30,8 +30,8 @@ Queue.prototype.add = function (uri, callback) {
 Queue.prototype.get = function (callback) {
     var item;
 
-    for (var i = 0; !item && i < this.items.length; i++) {
-        var new_item = this.items[i];
+    for (var i = 0; !item && i < this._items.length; i++) {
+        var new_item = this._items[i];
         if (!new_item.completed && 
             !new_item.processing) {item = new_item;}        
     }
