@@ -3,7 +3,7 @@ Flexible Web-Crawler Module
 
 Easily build flexible, scalable, and distributed, web crawlers for Node.js.
 
-#### Example (simple)
+#### Example
 
 ```javascript
 var flexible = require('./index.js');
