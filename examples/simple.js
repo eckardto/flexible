@@ -10,7 +10,7 @@ flexible.crawl({uri: 'http://www.google.com', interval: 140})
     .use(flexible.router)
 
     .route('*', function (req, res, body, queue_item) {
-        console.log('Everything is handled by this route.');
+        console.log('Every document is handled by this route.');
     })
 
     .on('complete', function () {console.log('Finished!');})
