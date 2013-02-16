@@ -8,25 +8,22 @@ Easily build flexible, scalable, and distributed, web crawlers for Node.js.
 ```javascript
 var flexible = require('./index.js');
 
-var crawl = flexible.crawl('http://www.example.com');
+flexible.crawl('http://www.example.com')
+    .use(flexible.querystring)
+    .use(flexible.router)
 
-crawl.use(flexible.querystring);
-crawl.use(flexible.router);
+    .route('/users/:name', function (req, res, body, queue_item) {
+        crawl.navigate('http://www.example.com/search?q=' + req.params.name);
+    })
+    .route('/search', function (req, res, body, queue_item) {
+        console.log('Search handled for:', req.params.q);
+    })
+    .route('*', function (req, res, body, queue_item) {
+        console.log('Everything is handled by this route.');
+    })
 
-crawl.route('/users/:name', function (req, res, body, queue_item) {
-    crawl.navigate('http://www.example.com/search?q=' + req.params.name);
-});
-
-crawl.route('/search', function (req, res, body, queue_item) {
-    console.log('Search handled for:', req.params.q);
-});
-
-crawl.route('*', function (req, res, body, queue_item) {
-    console.log('Everything is handled by this route.');
-});
-
-crawl.on('complete', function () {console.log('Finished!');});
-crawl.on('error', function (error) {console.error(error);});
+    .on('complete', function () {console.log('Finished!');})
+    .on('error', function (error) {console.error(error);});
 ```
 ### What does Flexible provide?
 * Asynchronous friendly, and evented, API for building flexible, scalable, and distributed web crawlers.
