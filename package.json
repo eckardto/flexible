@@ -1,0 +1,50 @@
+{
+    "name": "flexible",
+    "description": "Easily build flexible, scalable, and distributed, web crawlers for Node.js.",
+    "homepage": "http://github.com/eckardto/flexible",
+    "version": "0.0.1",
+    "private": true,
+
+    "author": {
+        "name": "Eckardt",
+        "email": "olekardt@gmail.com"
+    },
+
+    "repository": {
+        "type": "git",
+        "url": "http://github.com/eckardto/flexible.git"
+    },
+
+    "bugs": {
+        "url": "http://github.com/eckardto/flexible/issues"
+    },
+
+    "main": "./index.js",
+
+    "keywords": [
+        "flexible",
+        "crawler",
+        "spider",
+        "queue",
+        "distributed",
+        "sqlite",
+        "sqlite3",
+        "database",
+        "eventemitter",
+        "evented",
+        "router",
+        "querystring",
+        "middleware",
+        "scalable",
+        "node",
+        "nodejs",
+        "node.js"
+    ],
+
+    "dependencies": {
+        "async": "*",
+        "request": "*",
+        "iconv-lite": "*",
+        "sqlite3": "*"
+    }
+}
