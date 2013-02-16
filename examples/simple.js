@@ -4,19 +4,14 @@
 
 var flexible = require('../index.js');
 
-// Initiate and a crawler.
-var crawl = flexible.crawl({
-    uri: 'http://www.google.com',
-    domains: ['www.google.com', 'www.example.com']
-});
+// Initiate and a crawler. Chainable.
+flexible.crawl({uri: 'http://www.google.com', interval: 140})
+    .use(flexible.querystring)
+    .use(flexible.router);
 
-// Setup middleware.
-crawl.use(flexible.querystring);
-crawl.use(flexible.router);
+    .route('*', function (req, res, body, queue_item) {
+        console.log('Everything is handled by this route.');
+    })
 
-crawl.route('*', function (req, res, body, queue_item) {
-    console.log('Everything is handled by this route.');
-});
-
-crawl.on('complete', function () {console.log('Finished!');});
-crawl.on('error', function (error) {console.error(error);});
+    .on('complete', function () {console.log('Finished!');});
+    .on('error', function (error) {console.error(error);});
