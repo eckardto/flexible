@@ -18,10 +18,10 @@ crawl
         crawl.navigate('http://www.example.com/search?q=' + req.params.name);
     })
     .route('/search', function (req, res, body, queue_item) {
-        console.log('Search handled for:', req.params.q);
+        console.log('Search document handled for:', req.params.q);
     })
     .route('*', function (req, res, body, queue_item) {
-        console.log('Everything is handled by this route.');
+        console.log('Every document is handled by this route.');
     })
 
     .on('complete', function () {console.log('Finished!');})
