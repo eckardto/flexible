@@ -4,7 +4,7 @@
 
 var flexible = require('../index.js');
 
-// Initiate and a crawler. Chainable.
+// Initiate a crawler. Chainable.
 flexible.crawl({uri: 'http://www.google.com', interval: 140})
     .use(flexible.querystring)
     .use(flexible.router)
