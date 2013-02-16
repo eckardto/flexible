@@ -22,7 +22,7 @@ crawler.use(flexible.querystring);
 crawler.use(flexible.router);
 
 crawler.route('*', function (req, res, body, queue_item) {
-    console.log('Everything is handled by this route.');
+    console.log('Every document is handled by this route.');
 });
 
 crawler.on('complete', function () {console.log('Finished!');});
