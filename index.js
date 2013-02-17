@@ -14,7 +14,7 @@ var util = require('util');
 var events = require('events');
 
 var Queue = require('./queue.js').Queue;
-var extract = require('./node_modules/extract-region/');
+var extract = require('./extract-region.js');
 
 exports.Crawler = Crawler;
 exports.Queue = Queue;
