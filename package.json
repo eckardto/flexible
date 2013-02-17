@@ -3,7 +3,6 @@
     "description": "Easily build flexible, scalable, and distributed, web crawlers for Node.js.",
     "homepage": "http://github.com/eckardto/flexible",
     "version": "0.0.1",
-    "private": true,
 
     "author": {
         "name": "Eckardt",
