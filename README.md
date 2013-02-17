@@ -6,7 +6,7 @@ Easily build flexible, scalable, and distributed, web crawlers for Node.js.
 #### Basic Example
 
 ```javascript
-var flexible = require('./index.js');
+var flexible = require('flexible');
 
 // Initiate a crawler. Chainable.
 var crawl = flexible.crawl('http://www.example.com');
@@ -31,6 +31,12 @@ crawl
 * Asynchronous friendly, and evented, API for building flexible, scalable, and distributed web crawlers.
 * An array based queue for small crawls, and a fully SQLite based queue for quickly crawling billions of pages.
 * Middleware system; includes router middleware (wildcards, placeholders, etc), and querystring middleware.
+
+### Installation
+
+```
+npm install flexible
+```
 
 ## Licence
 This program is free software: you can redistribute it and/or modify
