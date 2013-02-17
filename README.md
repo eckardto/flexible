@@ -10,7 +10,6 @@ var flexible = require('flexible');
 
 // Initiate a crawler. Chainable.
 var crawl = flexible.crawl('http://www.example.com');
-crawl
     .use(flexible.querystring)
     .use(flexible.router)
 
