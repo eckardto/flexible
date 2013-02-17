@@ -21,17 +21,23 @@ crawler.jar = request.jar();
 crawler.use(flexible.querystring);
 crawler.use(flexible.router);
 
-crawler.route('*', function (req, res, body, queue_item) {
-    console.log('Every document is handled by this route.');
+// Custom middleware.
+crawler.use({
+    init: function (crawler) {
+        console.log('Custom middleware initiated.');
+    },
+
+    call: function (crawler, req, res, body, item, next) {
+        console.log('Custom middleware called.');
+
+        var error = null;
+        next(error, crawler, req, res, body, item);
+    }
 });
 
-crawler.on('complete', function () {console.log('Finished!');});
-crawler.on('error', function (error) {
-    if (error.message && 
-        error.message.indexOf('URI not allowed') === -1 && 
-        error.message.indexOf('Unsupported content type') === -1) {
-        console.error('Error: [', error.message, ']');
-    }
+// Setup route.
+crawler.route('*', function (req, res, body, queue_item) {
+    console.log('Every document is handled by this route.');
 });
 
 // Navigate the crawler to a URI.
@@ -39,5 +45,24 @@ crawler.navigate('http://www.google.com', function (error) {
     if (error) {throw error;} 
 
     // Start crawling.
-    crawler.crawl();
+    crawler.crawl(function (error) {
+        if (error) {throw error;}
+    });
 });
+
+// Events
+crawler
+    .on('document', function (req, res, body, queue_item) {
+        console.log('Document loaded for:', queue_item.uri);
+    })
+    .on('navigated', function (uri) {
+        console.log('Navigated to:', uri);
+    })
+    .on('complete', function () {console.log('Finished!');})
+    .on('error', function (error) {
+        if (error.message && 
+            error.message.indexOf('URI not allowed') === -1 && 
+            error.message.indexOf('Unsupported content type') === -1) {
+            console.error('Error: [', error.message, ']');
+        }
+    });
