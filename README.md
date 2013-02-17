@@ -9,7 +9,7 @@ Easily build flexible, scalable, and distributed, web crawlers for Node.js.
 var flexible = require('flexible');
 
 // Initiate a crawler. Chainable.
-var crawl = flexible.crawl('http://www.example.com');
+var crawl = flexible.crawl('http://www.example.com')
     .use(flexible.querystring)
     .use(flexible.router)
 
