@@ -1,7 +1,7 @@
 {
     "name": "flexible",
     "description": "Easily build flexible, scalable, and distributed, web crawlers for Node.js.",
-    "homepage": "http://github.com/eckardto/flexible",
+    "homepage": "http://github.com/Eckardto/flexible",
     "version": "0.0.2",
 
     "author": {
@@ -11,11 +11,11 @@
 
     "repository": {
         "type": "git",
-        "url": "http://github.com/eckardto/flexible.git"
+        "url": "http://github.com/Eckardto/flexible.git"
     },
 
     "bugs": {
-        "url": "http://github.com/eckardto/flexible/issues"
+        "url": "http://github.com/Eckardto/flexible/issues"
     },
 
     "main": "./index.js",

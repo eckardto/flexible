@@ -59,7 +59,10 @@ function Crawler() {
     this.interval = 250;
     this.encoding = undefined;
     this.proxy = undefined;
-    this.headers = undefined;
+    this.headers = {
+        'User-Agent': 'Node/Flexible 0.0.3 ' +
+            '(https://github.com/Eckardto/flexible)'
+    };
     this.timeout = undefined;
     this.follow_redirect = true;
     this.max_redirects = 10;

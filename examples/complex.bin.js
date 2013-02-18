@@ -13,7 +13,8 @@ crawler.queue = new flexible.SqliteQueue();
 crawler.max_concurrency = 5;
 crawler.interval = 100;
 crawler.max_redirects = 4;
-crawler.headers = {'User-Agent': 'Node/Flexible (https://github.com/eckardto/flexible)'};
+crawler.headers['User-Agent'] = 'Mozilla/6.0 (Windows NT 6.2; ' +
+    'WOW64; rv:16.0.1) Gecko/20121011 Firefox/16.0.1';
 crawler.domains = ['www.google.com'];
 crawler.jar = request.jar();
 
