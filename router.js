@@ -36,24 +36,21 @@ exports.init = function (crawler) {
             route: route,
             match: function (uri) {
                 var parsed_uri = url.parse(uri);
-                if (parsed_uri.search) {
-                    uri = uri.replace(parsed_uri.search, '');
-                }
+                if (parsed_uri.search) {uri = uri.replace(parsed_uri.search, '');}
 
                 var results = uri.match(regex);
                 if (!results) {return;}
 
                 var params = {};
                 for (var i = 1; i < results.length; i++) {
-                    if (placeholders[i - 1]) {
-                        params[placeholders[i - 1]] = results[i];
-                    }
+                    var placeholder = placeholders[i - 1];
+                    if (placeholder) {params[placeholder] = results[i];}
                 }
 
                 return params;
             }
         });
-
+        
         return crawler;
     };
 };
@@ -67,9 +64,9 @@ exports.call = function (crawler, req, res, body, item, next) {
         if (params) {
             if (!req.params) {req.params = params;}
             else {
-                for (var i in params) {
-                    if (params.hasOwnProperty(i)) {
-                        req.params[i] = params[i];
+                for (var j in params) {
+                    if (params.hasOwnProperty(j)) {
+                        req.params[j] = params[j];
                     }
                 }
             }
