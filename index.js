@@ -60,7 +60,7 @@ function Crawler() {
     this.encoding = undefined;
     this.proxy = undefined;
     this.headers = {
-        'User-Agent': 'Node/Flexible 0.0.3 ' +
+        'User-Agent': 'Node/Flexible 0.0.4 ' +
             '(https://github.com/Eckardto/flexible)'
     };
     this.timeout = undefined;
