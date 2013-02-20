@@ -71,7 +71,8 @@ exports.call = function (crawler, req, res, body, item, next) {
                 }
             }
 
-            crawler._routes[i].route(req, res, body, item);
+            crawler._routes[i].route(req, res, body, item); 
+            break;
         }
     }
 
