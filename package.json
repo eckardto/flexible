@@ -2,7 +2,7 @@
     "name": "flexible",
     "description": "Easily build flexible, scalable, and distributed, web crawlers for Node.js.",
     "homepage": "http://github.com/Eckardto/flexible",
-    "version": "0.0.3",
+    "version": "0.0.4",
 
     "author": {
         "name": "Eckardt Olson",
