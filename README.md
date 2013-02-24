@@ -37,6 +37,14 @@ var crawl = flexible.crawl('http://www.example.com')
 npm install flexible
 ```
 
+Or from source:
+
+```
+git clone git://github.com/eckardto/flexible.git 
+cd flexible
+npm link
+```
+
 ## License
 This program is free software: you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
