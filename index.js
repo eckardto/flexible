@@ -60,8 +60,8 @@ function Crawler() {
     this.encoding = undefined;
     this.proxy = undefined;
     this.headers = {
-        'User-Agent': 'Node/Flexible 0.0.4 ' +
-            '(https://github.com/Eckardto/flexible)'
+        'user-agent': 'Node/Flexible 0.0.5 ' +
+            '(https://github.com/eckardto/flexible)'
     };
     this.timeout = undefined;
     this.follow_redirect = true;
@@ -127,7 +127,7 @@ Crawler.prototype.crawl = function (callback) {
                 // Download page.
                 function (next) {
                     setTimeout(function () {
-                        var req = request({
+                        var error, req = request({
                             uri: item.uri, 
                             encoding: self.encoding ? null : undefined,
                             headers: self.header,
@@ -138,21 +138,27 @@ Crawler.prototype.crawl = function (callback) {
                             auth: self.auth,
                             pool: self.pool,
                             jar: self.jar
-                        }, function (error, res, body) {
+                        }, function (req_error, res, body) {
+                            if (req_error) {return next(req_error);}
                             if (error) {return next(error);}
-
+                            
+                            if (!body) {
+                                return next(new Error('Unable to retrieve resource.'));
+                            }
+                            
                             if (self.encoding) {
                                 body = iconv.decode(body, self.encoding).toString();
                             }
-                            
+
                             next(null, req, res, body);
                         });
 
                         req.on('response', function (res) {
                             if (res.headers['content-type'] && 
                                 res.headers['content-type'].indexOf('html') === -1) {
-                                req.end(); next(new Error('Unsupported content type.'));
-                            }                           
+                                error = new Error('Unsupported content type.');
+                                req.end();
+                            }
                         });
                     }, self.interval);
                 },
