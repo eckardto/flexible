@@ -23,9 +23,9 @@
 var async = require('async');
 var pg = require('pg');
 
-module.exports = function (connection, options) {
+module.exports = function (connection) {
     return function (crawler) {
-        crawler.queue = new Queue(connection, options);
+        crawler.queue = new Queue(connection);
 
         // End connection to database on completion.
         crawler.on('complete', function () {
