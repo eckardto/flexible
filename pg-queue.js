@@ -34,19 +34,9 @@ module.exports = function (connection, options) {
     };
 };
 
-function Queue(connection, options) {
+function Queue(connection) {
     this._client = new pg.Client(connection);
     this._client.connect();
-
-    if (!options) {
-        options = {
-            max_get_attempts: 10,
-            get_attempt_interval: 250
-        };
-    } 
-
-    this._max_get_attempts = options.max_get_attempts;
-    this._get_attempt_interval = options.get_attempt_interval;
 }
 
 var create_table_query = 'CREATE TABLE IF NOT EXISTS queue ' +
@@ -115,29 +105,7 @@ Queue.prototype.get = function (callback) {
                 completed: false,
                 error: undefined
             });
-        } else {
-            var attempts = 0, item;
-            async.whilst(function () {
-                return !item && 
-                    (!self._max_get_attempts || 
-                     attempts < self._max_get_attempts);
-            }, function (callback) {
-                ++attempts;
-                
-                setTimeout(function () {
-                    self.get(function (error, new_item) {
-                        if (error) {callback(error);}
-                        else {
-                            item = new_item;
-
-                            callback(null);
-                        }                    
-                    });
-                }, self._get_attempt_interval);
-            }, function (error) {
-                callback(error, item);
-            });               
-        }
+        } else {callback(null, null);}
     });
 };
 
