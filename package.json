@@ -2,7 +2,7 @@
     "name": "flexible",
     "description": "Easily build flexible, scalable, and distributed, web crawlers for Node.js.",
     "homepage": "https://github.com/eckardto/flexible",
-    "version": "0.0.5",
+    "version": "0.1.0",
 
     "author": {
         "name": "Eckardt Olson",
@@ -19,15 +19,22 @@
     },
 
     "main": "./index.js",
+    "bin": {"flexible": "bin/flexible.bin.js"},
 
     "keywords": [
         "flexible",
+        "web",
+        "html",
+        "paser",
+        "dom",
+        "document",
         "crawler",
         "spider",
         "queue",
         "distributed",
-        "sqlite",
-        "sqlite3",
+        "postgres",
+        "postgresql",
+        "sql",
         "database",
         "eventemitter",
         "evented",
@@ -44,6 +51,9 @@
         "async": "*",
         "request": "*",
         "iconv-lite": "*",
-        "sqlite3": "*"
+        "htmlparser": "*",
+        "traverse": "*",
+        "pg": "*",
+        "optimist": "*"
     }
 }
