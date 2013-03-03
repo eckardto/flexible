@@ -23,9 +23,7 @@ var crawler = flexible('http://www.example.com/')
     })
 
     .on('complete', function () {console.log('Crawling finished!');})
-    .on('error', function (error) {console.error(error);})
-
-    .crawl();
+    .on('error', function (error) {console.error(error);});
 
 ```
 ### What does Flexible provide?
@@ -75,7 +73,7 @@ Options:
 ## API
 
 ### flexible(options)
-Returns a configured, ready to begin crawling on demand, crawler instance.
+Returns a configured, navigated and or with crawling started, crawler instance.
 
 ### new flexible.Crawler()
 Returns a new Crawler object; basic configuration.

@@ -147,6 +147,4 @@ flexible(options)
             console.error('Error:', error.message || 
                           'An unknown error has occurred.');
         }
-    })
-
-    .crawl();
+    });

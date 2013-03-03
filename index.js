@@ -51,13 +51,16 @@ module.exports = function (options) {
         }
     }
 
-    if (options.uri) {
+    if (!options.uri) {crawler.crawl();}
+    else {
         if (!crawler.domains) {
             crawler.domains = [url.parse(options.uri).hostname];
         }
 
         crawler.navigate(options.uri, function (error) {
             if (error) {crawler.emit('error', error);}
+
+            crawler.crawl();
         });
     }
 
