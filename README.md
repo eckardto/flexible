@@ -74,10 +74,10 @@ Options:
 
 ## API
 
-### Flexible(options)
+### flexible(options)
 Returns a configured, ready to begin crawling on demand, crawler instance.
 
-### new Flexible.Crawler()
+### new flexible.Crawler()
 Returns a new Crawler object; basic configuration.
 
 ### Crawler#use(uri, [callback])
