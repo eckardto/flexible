@@ -33,22 +33,21 @@ function Queue() {this._items = []; this._history = {};}
  */
 Queue.prototype.add = function (uri, callback) {
     if (this._history[uri]) {
-        if (callback) {return callback(null);}
-        else {return callback(null);}
+        if (callback) {callback(null);}
+    } else {   
+        var item = {
+            queue: this, 
+            uri: uri, 
+            processing: false, 
+            completed: false,
+            error: undefined
+        };
+
+        this._items.push(item);
+        this._history[uri] = true;
+        
+        if (callback) {callback(null, item);}
     }
-
-    var item = {
-        queue: this, 
-        uri: uri, 
-        processing: false, 
-        completed: false,
-        error: undefined
-    };
-
-    this._items.push(item);
-    this._history[uri] = true;
-    
-    if (callback) {callback(null, item);}
 };
 
 /**

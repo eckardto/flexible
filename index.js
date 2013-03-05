@@ -87,7 +87,7 @@ function Crawler() {
     this.encoding = undefined;
     this.proxy = undefined;
     this.headers = {
-        'user-agent': 'Node/Flexible 0.1.0 ' +
+        'user-agent': 'Node/Flexible 0.1.1 ' +
             '(https://github.com/eckardto/flexible)'
     };
     this.timeout = undefined;
@@ -128,7 +128,9 @@ Crawler.prototype.navigate = function (uri, callback) {
             error.uri = uri;
 
             if (callback) {
-                process.nextTick(function () {callback(error);});
+                process.nextTick(function () {
+                    callback(error);
+                });
             } 
             
             return this;
@@ -176,10 +178,9 @@ Crawler.prototype.crawl = function (callback) {
 
                     var handler = new htmlparser
                         .DefaultHandler(function (html_error, dom) {
-                            if (html_error) {return next(html_error);}
-                            if (error) {return next(error);}
-                            
-                            next(null, req, res, body, dom);
+                            if (html_error) {next(html_error);}
+                            else if (error) {next(error);}
+                            else {next(null, req, res, body, dom);}
                         });
                     var parser = new htmlparser.Parser(handler);
 
@@ -302,6 +303,7 @@ Crawler.prototype.crawl = function (callback) {
 
                         steps.push(function (crawler, req, res, body, dom, item, next) {
                             self.emit('document', req, res, body, dom, item); 
+
                             next(null);
                         });
 

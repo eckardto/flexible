@@ -55,19 +55,21 @@ Crawl the web using Flexible.
 Usage: node [...]/flexible.bin.js
 
 Options:
-  --uri, --url       URI of web page to begin crawling on.          [string]
-  --domains          List of domains to allow crawling of.          [string]
-  --pg               PostgreSQL URI to connect to for queue.        [string]  [required]
-  --processes        Amount of child processes to use.              [default: 0]
-  --interval         Request interval of each crawler.              [default: 250]
-  --max-concurrency  Maximum concurrency of each crawler.           [default: 5]
-  --user-agent       User-agent to identify each crawler as.        [string]
-  --timeout          Maximum seconds a request can take.            [default: false]
-  --follow-redirect  Follow redirects or not.                       [boolean]
-  --max-redirects    Maximum amount of redirects.                 
-  --user             Username for HTTP basic authentication.        [string]
-  --pass             Password for HTTP basic authentication.        [string]
-  --proxy            An HTTP proxy to use for requests.             [string]
+  --uri, --url             URI of web page to begin crawling on.    [string]
+  --domains                List of domains to allow crawling of.    [string]
+  --pg                     PostgreSQL URI to connect to for queue.  [string]  [required]
+  --processes              Amount of child processes to use.        [default: 0]
+  --interval               Request interval of each crawler.        [default: 250]
+  --encoding               Encoding of response body for decoding.  [string]
+  --max-concurrency        Maximum concurrency of each crawler.     [default: 4]
+  --max-work-queue-length  Maximum length of the work queue.        [default: 10]
+  --user-agent             User-agent to identify each crawler as.  [string]
+  --timeout                Maximum seconds a request can take.      [default: false]
+  --follow-redirect        Follow HTTP redirection responses.       [boolean]
+  --max-redirects          Maximum amount of redirects.           
+  --user                   Username for HTTP basic authentication.  [string]
+  --pass                   Password for HTTP basic authentication.  [string]
+  --proxy                  An HTTP proxy to use for requests.       [string]
 ```
 
 ## API
@@ -78,14 +80,14 @@ Returns a configured, navigated and or with crawling started, crawler instance.
 ### new flexible.Crawler()
 Returns a new Crawler object; basic configuration.
 
-### Crawler#use(uri, [callback])
-Configure crawler to use a component.
+### Crawler#use([component], [callback])
+Configure the crawler to use a component.
 
 ### Crawler#navigate(uri, [callback])
 Process a URI, and have the crawler navigate (queue) to it.
 
 ### Crawler#crawl([callback])
-Have crawler crawl (recursive); navigates to each URI the crawler discovers.
+Have the crawler crawl (recursive); navigates to each URI the crawler discovers.
 
 ### Crawler#Queue#add(uri, [callback])
 Add a URI to the crawler's queue allowing it to be crawled.

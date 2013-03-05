@@ -42,8 +42,14 @@ var argv = require('optimist')
     .default('interval', 250)
     .describe('interval', 'Request interval of each crawler.')
 
-    .default('max-concurrency', 5)
+    .string('encoding')
+    .describe('encoding', 'Encoding of response body for decoding.')
+
+    .default('max-concurrency', 4)
     .describe('max-concurrency', 'Maximum concurrency of each crawler.')
+
+    .default('max-work-queue-length', 10)
+    .describe('max-work-queue-length', 'Maximum length of the work queue.')
 
     .string('user-agent')
     .describe('user-agent', 'User-agent to identify each crawler as.')
@@ -52,7 +58,7 @@ var argv = require('optimist')
     .describe('timeout', 'Maximum seconds a request can take.')
 
     .boolean('follow-redirect')
-    .describe('follow-redirect', 'Follow redirects or not.')
+    .describe('follow-redirect', 'Follow HTTP redirection responses.')
 
     .describe('max-redirects', 'Maximum amount of redirects.')
 
@@ -73,12 +79,14 @@ if (argv.processes > 0) {
     var spawn = require('child_process').spawn;
 
     var args = [
-        __filename, '--interval', argv.interval, '--pg', argv.pg,
+        __filename, '--pg', argv.pg, '--interval', argv.interval, 
         '--max-concurrency', argv['max-concurrency'],
+        '--max-work-queue-length', argv['max-work-queue-length'],
         '--timeout', argv.timeout
     ];
 
     if (argv.domains) {args.push('--domains', argv.domains);}
+    if (argv.encoding) {args.push('--encoding', argv.encoding);}
     if (argv['follow-redirect']) {
         args.push('--follow-redirect', argv['follow-redirect']);
     }
@@ -116,16 +124,21 @@ if (argv.domains) {
     }
     options.domains = domains;
 }
+if (argv.encoding) {options.encoding = argv.encoding;}
 if (argv.interval) {options.interval = argv.interval;}
 if (argv['follow-redirect']) {
     options.follow_redirect = argv['follow-redirect'];
 }
-if (argv['max-concurrency']) {
-    options.max_concurrency = argv['max-concurrency'];
-}
 if (argv['max-redirects']) {
     options.max_redirects = argv['max-redirects'];
 }
+if (argv['max-concurrency']) {
+    options.max_concurrency = argv['max-concurrency'];
+}
+if (argv['max-work-queue-length']) {
+    options.max_work_queue_length = argv['max-work-queue-length'];
+}
+if (argv.timeout) {options.timeout = argv.timeout;}
 if (argv.proxy) {options.proxy = argv.proxy;}
 if (argv['user-agent']) {
     options.headers = {'user-agent': argv['user-agent']};

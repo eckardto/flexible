@@ -20,7 +20,6 @@
  * along with Flexible.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-var async = require('async');
 var pg = require('pg');
 
 module.exports = function (connection) {
