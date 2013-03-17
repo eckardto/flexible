@@ -25,9 +25,9 @@
 var argv = require('optimist')
     .usage('Crawl the web using Flexible.\nUsage: $0')
 
-    .alias('uri', 'url')
-    .string('uri')
-    .describe('uri', 'URI of web page to begin crawling on.')
+    .alias('url', 'uri')
+    .string('url')
+    .describe('url', 'URL of web page to begin crawling on.')
 
     .string('domains')
     .describe('domains', 'List of domains to allow crawling of.')
@@ -48,8 +48,8 @@ var argv = require('optimist')
     .default('max-concurrency', 4)
     .describe('max-concurrency', 'Maximum concurrency of each crawler.')
 
-    .default('max-work-queue-length', 10)
-    .describe('max-work-queue-length', 'Maximum length of the work queue.')
+    .default('max-crawl-queue-length', 10)
+    .describe('max-crawl-queue-length', 'Maximum length of the crawl queue.')
 
     .string('user-agent')
     .describe('user-agent', 'User-agent to identify each crawler as.')
@@ -81,7 +81,7 @@ if (argv.processes > 0) {
     var args = [
         __filename, '--pg', argv.pg, '--interval', argv.interval, 
         '--max-concurrency', argv['max-concurrency'],
-        '--max-work-queue-length', argv['max-work-queue-length'],
+        '--max-crawl-queue-length', argv['max-crawl-queue-length'],
         '--timeout', argv.timeout
     ];
 
@@ -101,7 +101,7 @@ if (argv.processes > 0) {
         args.push('--user-agent', argv['user-agent']);
     }
 
-    for (var i = 0; i < argv.processes; i++) {
+    argv.processes.forEach(function () {
         var crawler = spawn('node', args);
 
         crawler.stdout.on('data', function (data) {
@@ -111,12 +111,12 @@ if (argv.processes > 0) {
         crawler.stderr.on('data', function (data) {
             console.error(data.toString().trim());
         });
-    }
+    });
 }
 
 var options = {};
 
-if (argv.uri) {options.uri = argv.uri;}
+if (argv.url) {options.url = argv.url;}
 if (argv.domains) {
     var domains = argv.domains.split(',');
     for (var i = 0; i < domains.length; i++) {
@@ -135,8 +135,8 @@ if (argv['max-redirects']) {
 if (argv['max-concurrency']) {
     options.max_concurrency = argv['max-concurrency'];
 }
-if (argv['max-work-queue-length']) {
-    options.max_work_queue_length = argv['max-work-queue-length'];
+if (argv['max-crawl-queue-length']) {
+    options.max_crawl_queue_length = argv['max-crawl-queue-length'];
 }
 if (argv.timeout) {options.timeout = argv.timeout;}
 if (argv.proxy) {options.proxy = argv.proxy;}
@@ -158,6 +158,6 @@ flexible(options)
         if (error.message.indexOf('not allowed') === -1 &&
             error.message.indexOf('type') === -1) {
             console.error('Error:', error.message || 
-                          'An unknown error has occurred.');
+                          'An error has occurred.');
         }
     });

@@ -55,21 +55,21 @@ Crawl the web using Flexible.
 Usage: node [...]/flexible.bin.js
 
 Options:
-  --uri, --url             URI of web page to begin crawling on.    [string]
-  --domains                List of domains to allow crawling of.    [string]
-  --pg                     PostgreSQL URI to connect to for queue.  [string]  [required]
-  --processes              Amount of child processes to use.        [default: 0]
-  --interval               Request interval of each crawler.        [default: 250]
-  --encoding               Encoding of response body for decoding.  [string]
-  --max-concurrency        Maximum concurrency of each crawler.     [default: 4]
-  --max-work-queue-length  Maximum length of the work queue.        [default: 10]
-  --user-agent             User-agent to identify each crawler as.  [string]
-  --timeout                Maximum seconds a request can take.      [default: false]
-  --follow-redirect        Follow HTTP redirection responses.       [boolean]
-  --max-redirects          Maximum amount of redirects.           
-  --user                   Username for HTTP basic authentication.  [string]
-  --pass                   Password for HTTP basic authentication.  [string]
-  --proxy                  An HTTP proxy to use for requests.       [string]
+  --url, --uri              URL of web page to begin crawling on.    [string]
+  --domains                 List of domains to allow crawling of.    [string]
+  --pg                      PostgreSQL URI to connect to for queue.  [string]  [required]
+  --processes               Amount of child processes to use.        [default: 0]
+  --interval                Request interval of each crawler.        [default: 250]
+  --encoding                Encoding of response body for decoding.  [string]
+  --max-concurrency         Maximum concurrency of each crawler.     [default: 4]
+  --max-crawl-queue-length  Maximum length of the crawl queue.       [default: 10]
+  --user-agent              User-agent to identify each crawler as.  [string]
+  --timeout                 Maximum seconds a request can take.      [default: false]
+  --follow-redirect         Follow HTTP redirection responses.       [boolean]
+  --max-redirects           Maximum amount of redirects.           
+  --user                    Username for HTTP basic authentication.  [string]
+  --pass                    Password for HTTP basic authentication.  [string]
+  --proxy                   An HTTP proxy to use for requests.       [string]
 ```
 
 ## API
@@ -77,20 +77,20 @@ Options:
 ### flexible(options)
 Returns a configured, navigated and or with crawling started, crawler instance.
 
-### new flexible.Crawler()
-Returns a new Crawler object; basic configuration.
+### new flexible.Crawler([options])
+Returns a new Crawler object.
 
 ### Crawler#use([component], [callback])
 Configure the crawler to use a component.
 
-### Crawler#navigate(uri, [callback])
-Process a URI, and have the crawler navigate (queue) to it.
+### Crawler#navigate(url, [callback])
+Process a location, and have the crawler navigate (queue) to it.
 
 ### Crawler#crawl([callback])
-Have the crawler crawl (recursive); navigates to each URI the crawler discovers.
+Have the crawler crawl (recursive).
 
-### Crawler#Queue#add(uri, [callback])
-Add a URI to the crawler's queue allowing it to be crawled.
+### Crawler#Queue#add(url, [callback])
+Add a location to the crawler's queue allowing it to be crawled.
 
 ### Crawler#Queue#get([callback])
 Retrieve, and start processing, an unprocessed item from the crawler's queue.
@@ -100,12 +100,12 @@ End processing of an item of the crawler's queue.
 
 ### Events
 
-* `navigated` (uri)
-Emitted when a URI has been successfully navigated (queued).
+* `navigated` (url)
+Emitted when a location has been successfully navigated (queued) to.
 * `document` (req, res, body, dom, item)
-Emitted when a document is finished being processed.
+Emitted when a document is finished being processed by the crawler.
 * `complete`
-Emitted when all navigated (queued) URIs have been crawled.
+Emitted when all navigated (queued) to locations have been crawled.
 
 ## License
 This program is free software: you can redistribute it and/or modify

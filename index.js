@@ -37,143 +37,86 @@ var querystring = require('./querystring.js');
  * Initiate a crawler and start crawling.
  */
 module.exports = function (options) {
-    var crawler = new Crawler();
-
-    crawler.use(querystring()).use(router());
-
-    if (typeof options === 'string') {options = {uri: options};}
-    else {
-        if (options.url) {options.uri = options.url;}
-        for (var option in options) {
-            if (options.hasOwnProperty(option)) {
-                crawler[option] = options[option];
-            }
-        }
+    if (typeof options === 'string') {
+        options = {url: options};
+    } else if (!options.url && options.uri) {
+        options.url = options.uri;
     }
 
-    if (!options.uri) {crawler.crawl();}
-    else {
-        if (!crawler.domains) {
-            crawler.domains = [url.parse(options.uri).hostname];
-        }
-
-        crawler.navigate(options.uri, function (error) {
-            if (error) {crawler.emit('error', error);}
-
-            crawler.crawl();
-        });
+    if (options.url && !options.domains) {
+        options.domains = [url.parse(options.url).hostname];
     }
+    
+    var crawler = (new Crawler(options))
+        .use(queue())
+        .use(querystring())
+        .use(router());
+
+    async.waterfall([
+        function (next) {
+            if (!options.url) {next(null);}
+            else {crawler.navigate(options.url, next);}
+        },
+        function (next) {crawler.crawl(next);}
+    ], function (error) {
+        if (error) {crawler.emit('error', error);}
+    });
 
     return crawler;
 };
 
 module.exports.Crawler = Crawler;
-module.exports.router = router;
 module.exports.queue = queue;
 module.exports.pgQueue = require('./pg-queue.js');
 module.exports.querystring = querystring;
+module.exports.router = router;
 
 util.inherits(Crawler, events.EventEmitter);
-function Crawler() {
+function Crawler(options) {
     events.EventEmitter.call(this);
 
-    this.use(queue());
-
     this._middleware = [];
-    this.domains = undefined;
-    this.max_concurrency = 4;
-    this.max_work_queue_length = 10;
-    this.interval = 250;
-    this.encoding = undefined;
-    this.proxy = undefined;
-    this.headers = {
-        'user-agent': 'Node/Flexible 0.1.1 ' +
+    this._domains = options.domains;
+    this._max_concurrency = options.max_concurrency || 4;
+    this._max_crawl_queue_length = options
+        .max_crawl_queue_length || 10;
+    this._interval = options.interval || 250;
+    this._encoding = options.encoding;
+    this._proxy = options.proxy;
+    this._headers = options.headers || {
+        'user-agent': 'Node/Flexible 0.1.10 ' +
             '(https://github.com/eckardto/flexible)'
     };
-    this.timeout = undefined;
-    this.follow_redirect = true;
-    this.max_redirects = 10;
-    this.auth = undefined;
-    this.pool = undefined;
-    this.jar = undefined;
-}
+    this._timeout = options.timeout;
+    this._follow_redirect = options.follow_redirect || true;
+    this._max_redirects = options.max_redirects || 10;
+    this._auth = options.auth;
+    this._pool = options.pool;
+    this._jar = options.jar;
 
-/**
- * Use a component.
- */
-Crawler.prototype.use = function (component) {
-    component(this); return this;
-};
-
-/**
- * Navigate to a URI.
- */
-Crawler.prototype.navigate = function (uri, callback) {
-    // Prepare URI.
-    if (uri.indexOf('http://') === -1 && 
-        uri.indexOf('https://') === -1) {
-        uri = 'http://' + uri;
-    }
-
-    if (this.domains && this.domains[0]) {
-        var hostname = url.parse(uri).hostname, found;
-        for (var i = 0; i < this.domains.length; i++) {
-            if (this.domains[i] === hostname) {
-                found = true; break;
-            }
-        }
-
-        if (!found) {
-            var error = new Error('URI not allowed to be navigated to.');
-            error.uri = uri;
-
-            if (callback) {
-                process.nextTick(function () {
-                    callback(error);
-                });
-            } 
-            
-            return this;
-        }
-    }
-
-    // Add to queue.
-    var self = this;
-    this.queue.add(uri, function (error) {
-        if (!error) {self.emit('navigated', uri);} 
-
-        callback(error);
-    });
-
-    return this;
-};
-
-/**
- * Crawl (recursive)
- */
-Crawler.prototype.crawl = function (callback) {
     var self = this;
 
-    if (!this._work_queue) {
-        this._work_queue = async.queue(function (item, callback) {
+    this._crawl_queue = async
+        .queue(function (item, callback) {
             async.waterfall([
-                // Delay according to interval.
+                // Delay according to crawler interval.
                 function (next) {
-                    setTimeout(function () {next(null);}, self.interval);
+                    setTimeout(function () {next(null);}, self._interval);
                 },
-                // Download and parse document.
+                // Download, while parsing, the document.
                 function (next) {
                     var error, body, res, req = request({
-                        uri: item.uri, 
-                        encoding: self.encoding ? null : undefined,
-                        headers: self.header,
-                        proxy: self.proxy,
-                        timeout: self.timeout,
-                        followRedirect: self.follow_redirect,
-                        maxRedirects: self.max_redirects,
-                        auth: self.auth,
-                        pool: self.pool,
-                        jar: self.jar
+                        url: item.url, 
+                        encoding: self._encoding ?
+                            null : undefined,
+                        headers: self._headers,
+                        proxy: self._proxy,
+                        timeout: self._timeout,
+                        followRedirect: self._follow_redirect,
+                        maxRedirects: self._max_redirects,
+                        auth: self._auth,
+                        pool: self._pool,
+                        jar: self._jar
                     });
 
                     var handler = new htmlparser
@@ -188,18 +131,20 @@ Crawler.prototype.crawl = function (callback) {
                         res = req_res;
 
                         if (!res.headers['content-type']) {
-                            error = new Error('Content type header missing.');
+                            error = new Error('Content type header is missing.');
+
                             return req.end();
                         }
                         
                         if (res.headers['content-type'].indexOf('html') === -1) {
                             error = new Error('Unsupported content type.');
+
                             return req.end();
                         }
 
                         res.on('data', function (chunk) {
-                            if (self.encoding) {
-                                chunk = iconv.decode(chunk, self.encoding);
+                            if (self._encoding) {
+                                chunk = iconv.decode(chunk, self._encoding);
                             }
 
                             body += chunk.toString();
@@ -217,17 +162,16 @@ Crawler.prototype.crawl = function (callback) {
 
                     req.on('end', function () {parser.done();});
                 },
-                // Extract and navigate to URIs.
+                // Discover, and navigate to, locations.
                 function (req, res, body, dom, next) {
-                    var uris = [];
+                    var locations = [];
+                    
+                    traverse(dom).forEach(function (node) {
+                        if (!node.attribs || !node.attribs.href) {return;}
 
-                    traverse(dom).forEach(function (obj) {
-                        if (!obj.attribs || !obj.attribs.href) {return;}
-
-                        var href = obj.attribs.href;
+                        var href = node.attribs.href;
                         var protocol = url.parse(href).protocol;
-                        if (protocol && protocol.indexOf('http') === -1) {return;}
-
+                        
                         if (href === '/') {href = res.request.uri.hostname;}
                         else if (!protocol) {
                             if (href.substring(0, 2) === '//') {
@@ -239,26 +183,32 @@ Crawler.prototype.crawl = function (callback) {
                                 href = res.request.uri.protocol + '//' + 
                                     res.request.uri.hostname + '/' + href;
                             }
-                        }                       
+                        } else if (protocol.indexOf('http') === -1) {
+                            // Only crawl locations using HTTP.
+                            return;
+                        }
 
-                        var start = href.substring(0, href.indexOf('.') + 1);
-                        href = start + href.replace(start, '').replace('//', '/');
-
+                        var start = href
+                            .substring(0, href.indexOf('.') + 1);
+                        href = start + href.replace(start, '')
+                            .replace('//', '/');
+                        
                         if (href.charAt(href.length - 1) === '/') {
                             href = href.substring(0, href.length - 1);
                         }
 
-                        uris.push(href);
+                        locations.push(href);
                     });
 
-                    async.forEach(uris, function (uri, callback) {
-                        self.navigate(uri, function (error) {
+                    async.forEach(locations, function (location, callback) {
+                        self.navigate(location, function (error) {
                             if (error) {self.emit('error', error);} 
+                            else {self.emit('navigated', location);}
                             
                             callback(null);
                         });
-                    }, function (error) {
-                        next(error, req, res, body, dom);
+                    }, function () {
+                        next(null, req, res, body, dom);
                     });
                 }
             ], function (error, req, res, body, dom) {
@@ -266,58 +216,109 @@ Crawler.prototype.crawl = function (callback) {
                     callback(crawl_error || error, req, res, body, dom);
                 }); 
             });
-        }, this.max_concurrency);
-        
-        this._work_queue.drain = function () {
-            self.emit('complete');
-        };
+        }, this._max_concurrency);
+
+    this._crawl_queue.drain = function () {
+        self.emit('complete');
+    };
+}
+
+/**
+ * Use a component.
+ */
+Crawler.prototype.use = function (component) {
+    // Plug in the component.
+    component(this); 
+
+    return this;
+};
+
+/**
+ * Navigate to a location.
+ */
+Crawler.prototype.navigate = function (location, callback) {
+    var parsed_location = url.parse(location);
+
+    if (!parsed_location.protocol) {
+        location = 'http://' + location;
     }
 
-    var fill = true;
+    if (this._domains) {
+        for (var i = 0, found; i < this._domains.length; i++) {
+            if (this._domains[i] === parsed_location.hostname) {
+                found = true; break;
+            }
+        }
+
+        if (!found) {
+            if (callback) {
+                callback(new Error('Location is not allowed.'));                
+            }
+
+            return this;
+        }
+    }
+
+    // Add to the queue.
+    this.queue.add(location, function (error) {
+        if (callback) {callback(error);}
+    });
+
+    return this;
+};
+
+/**
+ * Crawl (recursive)
+ */
+Crawler.prototype.crawl = function (callback) {
+    var self = this, fill = true;
     async.whilst(function () {
-        return fill && self._work_queue
-            .length() < self.max_work_queue_length;
+        return fill && self._crawl_queue
+            .length() < self._max_crawl_queue_length;
     }, function (callback) {
         self.queue.get(function (error, item) {
             if (error) {return callback(error);}
             if (!item) {return callback(fill = false);}
 
-            self._work_queue.push(item, function (error, req, res, body, dom) {
+            self._crawl_queue.push(item, function (error, req, res, body, dom) {
                 self.queue.end(item, error, function (end_error, item) {
                     if (end_error) {
-                        end_error.item = item; 
-                        self.emit('error', end_error);
-                    } else if (error) {
-                        error.item = item; 
-                        self.emit('error', error);
-                    } else {
-                        var steps = [
-                            function (next) {
-                                next(null, self, req, res, body, dom, item);
-                            }
-                        ];
+                        end_error.item = item;
+                        
+                        return self.emit('error', end_error);
+                    } 
 
-                        for (var i = 0; i < self._middleware.length; i++) {
-                            steps.push(self._middleware[i]);
+                    if (error) {
+                        error.item = item;
+
+                        return self.emit('error', error);
+                    }
+
+                    var steps = [
+                        function (next) {
+                            next(null, self, req, res, body, dom, item);
                         }
+                    ];
 
-                        steps.push(function (crawler, req, res, body, dom, item, next) {
-                            self.emit('document', req, res, body, dom, item); 
+                    for (var i = 0; i < self._middleware.length; i++) {
+                        steps.push(self._middleware[i]);
+                    }
 
-                            next(null);
-                        });
+                    steps.push(function (crawler, req, res, body, dom, item, next) {
+                        self.emit('document', req, res, body, dom, item); 
 
-                        async.waterfall(steps, function (error) {
-                            if (error) {self.emit('error', error);}
-                        });
-                    }                        
+                        next(null);
+                    });
+
+                    async.waterfall(steps, function (error) {
+                        if (error) {self.emit('error', error);}
+                    });
                 });
             });
-            
+
             callback(null);
         });
     }, function (error) {
-        if (error) {self.emit('error', error);}
         if (callback) {callback(error);}
     });
 

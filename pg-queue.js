@@ -1,32 +1,11 @@
 'use strict';
 
-/**
- * Flexible Web-Crawler Module
- * (https://github.com/eckardto/flexible.git)
- *
- * This file is part of Flexible.
- *
- * Flexible is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation, either version 3 of the License, or
- * (at your option) any later version.
- *
- * Flexible is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with Flexible.  If not, see <http://www.gnu.org/licenses/>.
- */
-
 var pg = require('pg');
 
 module.exports = function (connection) {
     return function (crawler) {
         crawler.queue = new Queue(connection);
 
-        // End connection to database on completion.
         crawler.on('complete', function () {
             crawler.queue._client.end();
         });
@@ -38,43 +17,50 @@ function Queue(connection) {
     this._client.connect();
 }
 
-var create_table_query = 'CREATE TABLE IF NOT EXISTS queue ' +
-    '(uri text UNIQUE, processing boolean, ' + 
-    'completed boolean, error text)';
+/**
+ * Setup the database.
+ */
+Queue.prototype._setup = function (callback) {
+    var query = 'CREATE TABLE IF NOT EXISTS queue ' +
+        '(url text UNIQUE, processing boolean, ' + 
+        'completed boolean, error text)';
+    this._client.query(query, function (error) {
+        if (error) {callback(error);}
+    });
+};
 
 /**
  * Add an item to the queue.
  */
-Queue.prototype.add = function (uri, callback) {
-    var self = this;
-
+Queue.prototype.add = function (location, callback) {
     var item = {
         queue: this, 
-        uri: uri, 
+        url: location, 
         processing: false, 
         completed: false,
         error: undefined
     };
-    
+
+    var self = this;
     var query = 'INSERT INTO queue VALUES ($1, $2, $3, $4)';
     this._client.query(query, [
-        item.uri, 
+        item.url, 
         item.processing, 
         item.completed, 
         item.error
     ], function (error) {
         if (error) {
-            if (error.message) {
-                if (error.message
-                    .indexOf('relation "queue" does not exist') !== -1) {
-                    self._client.query(create_table_query, function (error) {
+            if (error.code) {
+                if (error.code === '42P01') {
+                    self._setup(function (error) {
                         if (error && callback) {callback(error);}
-                        else {self.add(uri, callback);}
+                        else {self.add(location, callback);}
                     });
-                } else if (error.message
-                           .indexOf('duplicate key') !== -1) {
-                    callback(null, item);
-                } else if (callback) {callback(error);}
+                } else if (callback) {
+                   if (error.code === '23505') {
+                       callback(null, item);
+                   } else {callback(error);}
+                }
             } else if (callback) {callback(error);}
         } else if (callback) {callback(null, item);}
     });
@@ -85,26 +71,24 @@ Queue.prototype.add = function (uri, callback) {
  */
 Queue.prototype.get = function (callback) {
     var self = this;
-
     var query = 'UPDATE queue SET processing = true WHERE ' +
-        'uri IN (SELECT uri FROM queue WHERE NOT processing ' +
-        'AND NOT completed LIMIT 1) RETURNING uri';
+        'url IN (SELECT url FROM queue WHERE NOT processing ' +
+        'AND NOT completed LIMIT 1) RETURNING url';
     this._client.query(query, function (error, results) {
         if (error) {
-            if (error.message && error.message
-                .indexOf('relation "queue" does not exist') !== -1) {
-                self._client.query(create_table_query, function (error) {
-                    callback(error, null);
-                });
-            } else {callback(error);}
-        } else if (results.rows[0]) {
-            callback(null, {
-                uri: results.rows[0].uri,
-                processing: true,
-                completed: false,
-                error: undefined
-            });
-        } else {callback(null, null);}
+            if (error.code && error.code === '42P01') {
+                return self._setup(callback);
+            }
+
+            return callback(error, null);
+        }
+        
+        callback(null, results.rows[0] ? {
+            url: results.rows[0].url,
+            processing: true,
+            completed: false,
+            error: undefined
+        } : null);
     });
 };
 
@@ -117,9 +101,9 @@ Queue.prototype.end = function (item, error, callback) {
     item.error = error;
 
     var query = 'UPDATE queue SET processing = false, ' +
-        'completed = true, error = $1 WHERE uri = $2';
+        'completed = true, error = $1 WHERE url = $2';
     this._client.query(query, [
-        item.error, item.uri
+        item.error, item.url
     ], function (error) {
         if (callback) {callback(error, item);}
     });

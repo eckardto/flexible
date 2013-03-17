@@ -30,6 +30,7 @@ module.exports = function () {
                 var query = url.parse(req.uri.href).query;
                 if (query) {
                     query = querystring.parse(query);
+
                     if (!req.params) {req.params = query;}
                     else {
                         for (var i in query) {

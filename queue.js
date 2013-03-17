@@ -26,25 +26,28 @@ module.exports = function () {
     };
 };
 
-function Queue() {this._items = []; this._history = {};}
+function Queue() {
+    this._items = []; 
+    this._history = {};
+}
 
 /**
  * Add an item to the queue.
  */
-Queue.prototype.add = function (uri, callback) {
-    if (this._history[uri]) {
+Queue.prototype.add = function (location, callback) {
+    if (this._history[location]) {
         if (callback) {callback(null);}
     } else {   
         var item = {
             queue: this, 
-            uri: uri, 
+            url: location, 
             processing: false, 
             completed: false,
             error: undefined
         };
 
         this._items.push(item);
-        this._history[uri] = true;
+        this._history[location] = true;
         
         if (callback) {callback(null, item);}
     }
@@ -54,8 +57,8 @@ Queue.prototype.add = function (uri, callback) {
  * Get an item to process.
  */
 Queue.prototype.get = function (callback) {
-    var item;
-    for (var i = 0; !item && i < this._items.length; i++) {
+    for (var i = 0, item; !item && 
+         i < this._items.length; i++) {
         var new_item = this._items[i];
         if (!new_item.completed && 
             !new_item.processing) {

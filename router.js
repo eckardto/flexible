@@ -43,29 +43,28 @@ module.exports = function () {
                     pattern = '*' + pattern;
                 }
 
-                pattern = pattern
-                    .replace(/([:*])([\w\-]+)?/g, function (match, operator, placeholder) {             
-                        if (placeholder) {placeholders.push(placeholder);}
+                var replace = function (match, operator, placeholder) {
+                    if (placeholder) {placeholders.push(placeholder);}
+                    
+                    return operator === '*' ? '(.*?)' : '([^/#?]*)';
+                };
 
-                        return operator === '*' ? '(.*?)' : '([^/#?]*)';
-                    });
-
+                pattern = pattern.replace(/([:*])([\w\-]+)?/g, replace);
                 regex = new RegExp('^' + pattern + '$');
             }
             
             crawler._routes.push({
                 route: route,
-                match: function (uri) {
-                    var parsed_uri = url.parse(uri);
-                    if (parsed_uri.search) {
-                        uri = uri.replace(parsed_uri.search, '');
+                match: function (location) {
+                    var parsed_location = url.parse(location);
+                    if (parsed_location.search) {
+                        location = location.replace(parsed_location.search, '');
                     }
 
-                    var results = uri.match(regex);
+                    var results = location.match(regex);
                     if (!results) {return;}
 
-                    var params = {};
-                    for (var i = 1; i < results.length; i++) {
+                    for (var i = 1, params = {}; i < results.length; i++) {
                         var placeholder = placeholders[i - 1];
                         if (placeholder) {
                             params[placeholder] = results[i];
@@ -94,6 +93,7 @@ module.exports = function () {
                         }
 
                         crawler._routes[i].route(req, res, body, dom, item); 
+
                         break;
                     }
                 }
