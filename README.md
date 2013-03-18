@@ -74,7 +74,7 @@ Options:
 
 ## API
 
-### flexible(options)
+### flexible([options])
 Returns a configured, navigated and or with crawling started, crawler instance.
 
 ### new flexible.Crawler([options])
