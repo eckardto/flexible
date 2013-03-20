@@ -77,6 +77,7 @@ function Crawler(options) {
 
     this._middleware = [];
     this._domains = options.domains;
+    this._aborted = false;
     this._max_concurrency = options.max_concurrency || 4;
     this._max_crawl_queue_length = options
         .max_crawl_queue_length || 10;
@@ -84,7 +85,7 @@ function Crawler(options) {
     this._encoding = options.encoding;
     this._proxy = options.proxy;
     this._headers = options.headers || {
-        'user-agent': 'Node/Flexible 0.1.10 ' +
+        'user-agent': 'Node/Flexible 0.1.11 ' +
             '(https://github.com/eckardto/flexible)'
     };
     this._timeout = options.timeout;
@@ -212,6 +213,10 @@ function Crawler(options) {
                     });
                 }
             ], function (error, req, res, body, dom) {
+                if (self._aborted) {
+                    return callback(error, req, res, body, dom);
+                } 
+
                 self.crawl(function (crawl_error) {
                     callback(crawl_error || error, req, res, body, dom);
                 }); 
@@ -273,7 +278,7 @@ Crawler.prototype.navigate = function (location, callback) {
 Crawler.prototype.crawl = function (callback) {
     var self = this, fill = true;
     async.whilst(function () {
-        return fill && self._crawl_queue
+        return !self._aborted && fill && self._crawl_queue
             .length() < self._max_crawl_queue_length;
     }, function (callback) {
         self.queue.get(function (error, item) {
@@ -323,4 +328,18 @@ Crawler.prototype.crawl = function (callback) {
     });
 
     return this;
+};
+
+/**
+ * Abort crawling.
+ */
+Crawler.prototype.abort = function () {    
+    if (this._aborted) {return};
+
+    this._aborted = true;
+    this._crawl_queue.tasks.length = 0;
+
+    if (!this._crawl_queue.running()) {
+        this.emit('complete');
+    }
 };

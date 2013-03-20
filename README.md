@@ -89,6 +89,9 @@ Process a location, and have the crawler navigate (queue) to it.
 ### Crawler#crawl([callback])
 Have the crawler crawl (recursive).
 
+### Crawler#abort()
+Have the crawler abort crawling.
+
 ### Crawler#Queue#add(url, [callback])
 Add a location to the crawler's queue allowing it to be crawled.
 
