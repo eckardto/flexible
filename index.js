@@ -212,7 +212,7 @@ Crawler.prototype._process = function (queue_item, callback) {
         // Discover, and navigate to, locations.
         function (req, res, body, dom, next) {
             var locations = [];
-            
+            console.log(dom);
             traverse(dom).forEach(function (node) {
                 if (!node.attribs || !node.attribs.href) {return;}
 
@@ -257,13 +257,13 @@ Crawler.prototype._process = function (queue_item, callback) {
             }, function () {next(null, req, res, body, dom);});
         }
     ], function (error, req, res, body, dom) {
-        if (error) {callback(error);} else {
+        if (error) {callback(error);} 
+        else {
+            res.document = dom;
+            res.body = body;
+
             self.crawl(function (error) {
-                callback(error, req, res, {
-                    queue_item: queue_item,
-                    body: body, 
-                    document: dom
-                });
+                callback(error, req, res);
             }); 
         }
     });
@@ -279,7 +279,7 @@ Crawler.prototype._crawl = function (callback) {
             if (error) {return callback(error);}
             if (!queue_item) {return callback(fill = false);}
 
-            self._crawl_queue.push(queue_item, function (error, req, res, item) {
+            self._crawl_queue.push(queue_item, function (error, req, res) {
                 self.queue.end(queue_item, error, function (end_error, queue_item) {
                     if (end_error) {
                         end_error.queue_item = queue_item;
@@ -292,10 +292,10 @@ Crawler.prototype._crawl = function (callback) {
                     }
                     
                     async.waterfall([
-                        function (next) {next(null, self, req, res, item);}
+                        function (next) {next(null, self, req, res, queue_item);}
                     ].concat(self._middleware.concat([
-                        function (crawler, req, res, item, next) {
-                            self.emit('document', req, res, item); 
+                        function (crawler, req, res, queue_item, next) {
+                            self.emit('document', req, res, queue_item); 
 
                             next(null);
                         }
