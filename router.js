@@ -48,7 +48,6 @@ module.exports = function () {
                     
                     return operator === '*' ? '(.*?)' : '([^/#?]*)';
                 };
-
                 pattern = pattern.replace(/([:*])([\w\-]+)?/g, replace);
                 regex = new RegExp('^' + pattern + '$');
             }
