@@ -2,9 +2,15 @@
 
 var pg = require('pg');
 
-module.exports = function (connection) {
+module.exports = function (options) {
+    if (typeof options === 'string') {
+        options = {url: options, get_interval: 250};
+    } else if (options.uri) {
+        options.url = options.uri;
+    }
+
     return function (crawler) {
-        crawler.queue = new Queue(connection);
+        crawler.queue = new Queue(options);
 
         crawler.on('complete', function () {
             crawler.queue._client.end();
@@ -12,8 +18,9 @@ module.exports = function (connection) {
     };
 };
 
-function Queue(connection) {
-    this._client = new pg.Client(connection);
+function Queue(options) {
+    this._get_interval = options.get_interval;
+    this._client = new pg.Client(options.url);
     this._client.connect();
 }
 
@@ -70,26 +77,30 @@ Queue.prototype.add = function (location, callback) {
  * Get an item to process.
  */
 Queue.prototype.get = function (callback) {
-    var self = this;
     var query = 'UPDATE queue SET processing = true WHERE ' +
         'url IN (SELECT url FROM queue WHERE NOT processing ' +
         'AND NOT completed LIMIT 1) RETURNING url';
-    this._client.query(query, function (error, results) {
-        if (error) {
-            if (error.code && error.code === '42P01') {
-                return self._setup(callback);
-            }
 
-            return callback(error, null);
-        }
-        
-        callback(null, results.rows[0] ? {
-            url: results.rows[0].url,
-            processing: true,
-            completed: false,
-            error: undefined
-        } : null);
-    });
+    var self = this;
+    (function get() {
+        self._client.query(query, function (error, results) {
+            if (error) {
+                if (error.code && 
+                    error.code === '42P01') {
+                    self._setup(callback);
+                } else {callback(error, null);}
+            } else if (!results.rows[0]) {
+                setTimeout(get, self._get_interval);
+            } else {
+                callback(null, results.rows[0] ? {
+                    url: results.rows[0].url,
+                    processing: true,
+                    completed: false,
+                    error: undefined
+                } : null);
+            }
+        });
+    })();
 };
 
 /**

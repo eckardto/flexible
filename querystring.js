@@ -26,7 +26,7 @@ var querystring = require('querystring');
 module.exports = function () {
     return function (crawler) {
         crawler._middleware
-            .push(function (crawler, req, res, body, dom, item, next) {
+            .push(function (crawler, req, res, item, next) {
                 var query = url.parse(req.uri.href).query;
                 if (query) {
                     query = querystring.parse(query);
@@ -41,7 +41,7 @@ module.exports = function () {
                     }
                 }
 
-                next(null, crawler, req, res, body, dom, item);
+                next(null, crawler, req, res, item);
             });
     };
 };

@@ -54,17 +54,18 @@ module.exports = function () {
             }
             
             crawler._routes.push({
-                route: route,
-                match: function (location) {
+                route: route, match: function (location) {
                     var parsed_location = url.parse(location);
                     if (parsed_location.search) {
-                        location = location.replace(parsed_location.search, '');
+                        location = location
+                            .replace(parsed_location.search, '');
                     }
 
                     var results = location.match(regex);
                     if (!results) {return;}
 
-                    for (var i = 1, params = {}; i < results.length; i++) {
+                    for (var params = {}, i = 1; 
+                         i < results.length; i++) {
                         var placeholder = placeholders[i - 1];
                         if (placeholder) {
                             params[placeholder] = results[i];
@@ -79,7 +80,7 @@ module.exports = function () {
         };
 
         crawler._middleware
-            .push(function (crawler, req, res, body, dom, item, next) {
+            .push(function (crawler, req, res, item, next) {
                 for (var i = 0; i < crawler._routes.length; i++) {
                     var params = crawler._routes[i].match(req.uri.href);
                     if (params) {
@@ -92,13 +93,13 @@ module.exports = function () {
                             }
                         }
 
-                        crawler._routes[i].route(req, res, body, dom, item); 
+                        crawler._routes[i].route(req, res, item); 
 
                         break;
                     }
                 }
 
-                next(null, crawler, req, res, body, dom, item);
+                next(null, crawler, req, res, item);
             });
     };
 };

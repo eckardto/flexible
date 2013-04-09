@@ -89,6 +89,12 @@ Process a location, and have the crawler navigate (queue) to it.
 ### Crawler#crawl([callback])
 Have the crawler crawl (recursive).
 
+### Crawler#pause()
+Have the crawler pause crawling.
+
+### Crawler#resume()
+Have the crawler resume crawling.
+
 ### Crawler#abort()
 Have the crawler abort crawling.
 
@@ -107,6 +113,8 @@ End processing of an item of the crawler's queue.
 Emitted when a location has been successfully navigated (queued) to.
 * `document` (req, res, body, dom, item)
 Emitted when a document is finished being processed by the crawler.
+* `aborted`
+Emitted when crawling has completed due to crawling being aborted.
 * `complete`
 Emitted when all navigated (queued) to locations have been crawled.
 
