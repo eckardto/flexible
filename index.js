@@ -190,9 +190,9 @@ Crawler.prototype._process = function (queue_item, callback) {
                 }
                 
                 var handler = 
-                    new htmlparser.DefaultHandler(function (error, dom) {
+                    new htmlparser.DefaultHandler(function (error, doc) {
                         if (error) {next(error);}
-                        else {next(null, res.request, res, body, dom);}
+                        else {next(null, res.request, res, body, doc);}
                     }), parser = new htmlparser.Parser(handler);
                 
                 var body = '';
@@ -210,10 +210,9 @@ Crawler.prototype._process = function (queue_item, callback) {
             }).on('error', next);
         },
         // Discover, and navigate to, locations.
-        function (req, res, body, dom, next) {
+        function (req, res, body, doc, next) {
             var locations = [];
-            console.log(dom);
-            traverse(dom).forEach(function (node) {
+            traverse(doc).forEach(function (node) {
                 if (!node.attribs || !node.attribs.href) {return;}
 
                 var href = node.attribs.href;
@@ -254,16 +253,13 @@ Crawler.prototype._process = function (queue_item, callback) {
                     
                     callback(null);
                 });
-            }, function () {next(null, req, res, body, dom);});
+            }, function () {next(null, req, res, body, doc);});
         }
-    ], function (error, req, res, body, dom) {
+    ], function (error, req, res, body, doc) {
         if (error) {callback(error);} 
         else {
-            res.document = dom;
-            res.body = body;
-
             self.crawl(function (error) {
-                callback(error, req, res);
+                callback(error, req, res, body, doc);
             }); 
         }
     });
@@ -279,7 +275,7 @@ Crawler.prototype._crawl = function (callback) {
             if (error) {return callback(error);}
             if (!queue_item) {return callback(fill = false);}
 
-            self._crawl_queue.push(queue_item, function (error, req, res) {
+            self._crawl_queue.push(queue_item, function (error, req, res, body, doc) {
                 self.queue.end(queue_item, error, function (end_error, queue_item) {
                     if (end_error) {
                         end_error.queue_item = queue_item;
@@ -292,10 +288,10 @@ Crawler.prototype._crawl = function (callback) {
                     }
                     
                     async.waterfall([
-                        function (next) {next(null, self, req, res, queue_item);}
+                        function (next) {next(null, self, req, res, body, doc);}
                     ].concat(self._middleware.concat([
-                        function (crawler, req, res, queue_item, next) {
-                            self.emit('document', req, res, queue_item); 
+                        function (crawler, req, res, body, doc, next) {
+                            self.emit('document', req, res, body, doc); 
 
                             next(null);
                         }

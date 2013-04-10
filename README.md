@@ -12,13 +12,13 @@ var flexible = require('flexible');
 var crawler = flexible('http://www.example.com/')
     .use(flexible.pgQueue('postgres://postgres:1234@localhost:5432/'))
 
-    .route('/search?q=', function (req, res, queue_item) {
+    .route('/search?q=', function (req, res, body, doc) {
         console.log('Search results handled for query:', req.params.q);
     })
-    .route('/users/:name', function (req, res, queue_item) {
+    .route('/users/:name', function (req, res, body, doc) {
         crawler.navigate('http://www.example.com/search?q=' + req.params.name);
     })
-    .route('*', function (req, res, queue_item) {
+    .route('*', function (req, res, body, doc) {
         console.log('Every other document is handled by this route.');
     })
 
