@@ -347,11 +347,6 @@ Crawler.prototype.abort = function () {
         callback(null);
     };
 
-    var self = this;
-    this.on('complete', function () {
-        self.emit('aborted');
-    });
-
     this._crawl_queue.tasks.length = 0;
     if (!this._crawl_queue.running()) {
         this._complete();

@@ -104,8 +104,6 @@ Have the crawler abort crawling.
 Emitted when a location has been successfully navigated (queued) to.
 * `document` (req, res, body, dom, item)
 Emitted when a document is finished being processed by the crawler.
-* `aborted`
-Emitted when crawling has completed due to crawling being aborted.
 * `complete`
 Emitted when all navigated (queued) to locations have been crawled.
 
