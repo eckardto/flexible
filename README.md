@@ -98,15 +98,6 @@ Have the crawler resume crawling.
 ### Crawler#abort()
 Have the crawler abort crawling.
 
-### Crawler#Queue#add(url, [callback])
-Add a location to the crawler's queue allowing it to be crawled.
-
-### Crawler#Queue#get([callback])
-Retrieve, and start processing, an unprocessed item from the crawler's queue.
-
-### Crawler#Queue#end(item, [error], [callback])
-End processing of an item of the crawler's queue.
-
 ### Events
 
 * `navigated` (url)
