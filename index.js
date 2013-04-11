@@ -116,6 +116,11 @@ function Crawler(options) {
      */
     this.crawl = function (callback) {
         this._crawl(function (error) {
+            if (!self._crawl_queue.tasks.length &&
+                !self._crawl_queue.running()) {
+                self._complete();
+            }
+
             if (error) {
                 if (callback) {callback(error);}
                 else {self.emit('error', error);}
@@ -263,6 +268,8 @@ Crawler.prototype._process = function (queue_item, callback) {
             }); 
         }
     });
+
+    return this;
 };
 
 Crawler.prototype._crawl = function (callback) {
@@ -276,16 +283,20 @@ Crawler.prototype._crawl = function (callback) {
             if (!queue_item) {return callback(fill = false);}
 
             self._crawl_queue.push(queue_item, function (error, req, res, body, doc) {
-                self.queue.end(queue_item, error, function (end_error, queue_item) {
-                    if (end_error) {
-                        end_error.queue_item = queue_item;
-                        return self.emit('error', end_error);
-                    } 
+                if (error) {
+                    error.queue_item = queue_item;
+                    self.emit('error', error);
 
+                    if (!error.message) {
+                        error.message = 'An unknown error has occurred.';
+                    }
+                }                
+
+                self.queue.end(queue_item, error, function (error, queue_item) {
                     if (error) {
                         error.queue_item = queue_item;
                         return self.emit('error', error);
-                    }
+                    } 
                     
                     async.waterfall([
                         function (next) {next(null, self, req, res, body, doc);}
@@ -304,58 +315,68 @@ Crawler.prototype._crawl = function (callback) {
             callback(null);
         });
     }, callback);
+
+    return this;
 };
 
 /**
  * Pause crawling.
  */
 Crawler.prototype.pause = function () {    
-    if (this._paused) {return;}
+    if (!this._paused) {
+        this.crawl = function (callback) {
+            var self = this;
+            self.once('resumed', function () {
+                self._crawl(callback);
+            });
+        };   
 
-    this.crawl = function (callback) {
-        var self = this;
-        self.once('resumed', function () {
-            self._crawl(callback);
-        });
-    };   
+        this._paused = true;
+        this.emit('paused');
+    }
 
-    this._paused = true;
-    this.emit('paused');
+    return this;
 };
 
 /**
  * Resume crawling.
  */
 Crawler.prototype.resume = function () {
-    if (this._completed || 
-        !this._paused) {return;}
+    if (!this._completed && !this._paused) {
+        this.crawl = this._crawl;
 
-    this.crawl = this._crawl;
+        this._paused = false;
+        this.emit('resumed');
+    }
 
-    this._paused = false;
-    this.emit('resumed');
+    return this;
 };
 
 /**
  * Abort crawling.
  */
 Crawler.prototype.abort = function () {
-    if (this._completed) {return;}
-    if (this._paused) {this.resume();}
+    if (!this._completed) {
+        if (this._paused) {return this.resume();}
 
-    this.crawl = function (callback) {
-        callback(null);
-    };
+        this.crawl = function (callback) {
+            callback(null);
+        };
 
-    this._crawl_queue.tasks.length = 0;
-    if (!this._crawl_queue.running()) {
-        this._complete();
+        this._crawl_queue.tasks.length = 0;
+        if (!this._crawl_queue.running()) {
+            this._complete();
+        }
     }
+    
+    return this;
 };
 
 Crawler.prototype._complete = function () {
-    if (this._completed) {return;}
+    if (!this._completed) {
+        this._completed = true;
+        this.emit('complete');
+    }
 
-    this._completed = true;
-    this.emit('complete');
+    return this;
 };

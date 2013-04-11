@@ -35,9 +35,8 @@ function Queue() {
  * Add an item to the queue.
  */
 Queue.prototype.add = function (location, callback) {
-    if (this._history[location]) {
-        if (callback) {callback(null);}
-    } else {   
+    if (this._history[location]) {callback(null);} 
+    else {   
         var item = {
             queue: this, 
             url: location, 
@@ -49,7 +48,7 @@ Queue.prototype.add = function (location, callback) {
         this._items.push(item);
         this._history[location] = true;
         
-        if (callback) {callback(null, item);}
+        callback(null, item);
     }
 };
 
@@ -84,5 +83,5 @@ Queue.prototype.end = function (item, error, callback) {
     item.completed = true;
     item.error = error;
 
-    if (callback) {callback(null, item);}
+    callback(null, item);
 };

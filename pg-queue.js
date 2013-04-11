@@ -4,11 +4,11 @@ var pg = require('pg');
 
 module.exports = function (options) {
     if (typeof options === 'string') {
-        options = {url: options, get_interval: 250};
-    } else if (options.uri) {
-        options.url = options.uri;
+        options = {uri: options};
+    } else if (options.url) {
+        options.uri = options.url;
     }
-
+    
     return function (crawler) {
         crawler.queue = new Queue(options);
 
@@ -19,8 +19,10 @@ module.exports = function (options) {
 };
 
 function Queue(options) {
-    this._get_interval = options.get_interval;
-    this._client = new pg.Client(options.url);
+    console.log(options);
+    this._get_interval = options.get_interval || 250;
+    this._max_get_attempts = options.max_get_attempts || 4;
+    this._client = new pg.Client(options.uri);
     this._client.connect();
 }
 
@@ -31,9 +33,8 @@ Queue.prototype._setup = function (callback) {
     var query = 'CREATE TABLE IF NOT EXISTS queue ' +
         '(url text UNIQUE, processing boolean, ' + 
         'completed boolean, error text)';
-    this._client.query(query, function (error) {
-        if (error) {callback(error);}
-    });
+    this._client
+        .query(query, function (error) {callback(error)});
 };
 
 /**
@@ -60,16 +61,14 @@ Queue.prototype.add = function (location, callback) {
             if (error.code) {
                 if (error.code === '42P01') {
                     self._setup(function (error) {
-                        if (error && callback) {callback(error);}
+                        if (error) {callback(error);}
                         else {self.add(location, callback);}
                     });
-                } else if (callback) {
-                   if (error.code === '23505') {
-                       callback(null, item);
-                   } else {callback(error);}
-                }
-            } else if (callback) {callback(error);}
-        } else if (callback) {callback(null, item);}
+                } else if (error.code === '23505') {
+                    callback(null, item);
+                } else {callback(error);}
+            } else {callback(error);}
+        } else {callback(null, item);}
     });
 };
 
@@ -81,7 +80,7 @@ Queue.prototype.get = function (callback) {
         'url IN (SELECT url FROM queue WHERE NOT processing ' +
         'AND NOT completed LIMIT 1) RETURNING url';
 
-    var self = this;
+    var attempts = 0, self = this;
     (function get() {
         self._client.query(query, function (error, results) {
             if (error) {
@@ -90,7 +89,10 @@ Queue.prototype.get = function (callback) {
                     self._setup(callback);
                 } else {callback(error, null);}
             } else if (!results.rows[0]) {
-                setTimeout(get, self._get_interval);
+                if (attempts < self._max_get_attempts) {
+                    ++attempts;
+                    setTimeout(get, self._get_interval);
+                } else {callback(null, null);}
             } else {
                 callback(null, results.rows[0] ? {
                     url: results.rows[0].url,
@@ -114,8 +116,6 @@ Queue.prototype.end = function (item, error, callback) {
     var query = 'UPDATE queue SET processing = false, ' +
         'completed = true, error = $1 WHERE url = $2';
     this._client.query(query, [
-        item.error, item.url
-    ], function (error) {
-        if (callback) {callback(error, item);}
-    });
+        item.error ? item.error.message : null, item.url
+    ], function (error) {callback(error, item);});
 };
