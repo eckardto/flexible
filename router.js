@@ -79,7 +79,7 @@ module.exports = function () {
         };
 
         crawler._middleware
-            .push(function (crawler, req, res, body, doc, next) {
+            .push(function (crawler, req, res, body, dom, next) {
                 for (var i = 0; i < crawler._routes.length; i++) {
                     var params = crawler._routes[i].match(req.uri.href);
                     if (params) {
@@ -92,13 +92,13 @@ module.exports = function () {
                             }
                         }
 
-                        crawler._routes[i].route(req, res, body, doc); 
+                        crawler._routes[i].route(req, res, body, dom); 
 
                         break;
                     }
                 }
 
-                next(null, crawler, req, res, body, doc);
+                next(null, crawler, req, res, body, dom);
             });
     };
 };

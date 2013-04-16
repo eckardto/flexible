@@ -19,7 +19,6 @@ module.exports = function (options) {
 };
 
 function Queue(options) {
-    console.log(options);
     this._get_interval = options.get_interval || 250;
     this._max_get_attempts = options.max_get_attempts || 4;
     this._client = new pg.Client(options.uri);

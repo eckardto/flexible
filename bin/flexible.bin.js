@@ -11,36 +11,17 @@ var argv = require('optimist')
     .string('url')
     .describe('url', 'URL of web page to ' + 
               'begin crawling on.')
+    .demand('url')
 
     .alias('domains', 'd')
     .string('domains')
     .describe('domains', 'List of domains ' + 
               'to allow crawling of.')
 
-    .alias('pg-uri', 'pg-url')
-    .alias('pg-uri', 'pg')
-    .string('pg-uri')
-    .describe('pg-uri', 'PostgreSQL URI to ' + 
-              'connect to for pgQueue.')
-    .demand('pg-uri')
-
-    .default('pg-get-interval', 250)
-    .describe('pg-get-interval', 'Request ' + 
-              'interval for get of pgQueue.')
-
-    .default('pg-max-get-attempts', 4)
-    .describe('pg-max-get-attempts', 'Maximum ' + 
-              'attempts for get of pgQueue.')
-
-    .alias('processes', 'p')
-    .default('processes', 0)
-    .describe('processes', 'Amount of child ' + 
-              'processes to use.')
-
     .alias('interval', 'i')
     .default('interval', 250)
-    .describe('interval', 'Request interval ' + 
-              'of each crawler.')
+    .describe('interval', 'Request ' + 
+              'interval of each crawler.')
 
     .alias('encoding', 'e')
     .string('encoding')
@@ -87,48 +68,6 @@ var argv = require('optimist')
 
     .argv;
 
-if (argv.processes > 0) {
-    if (!argv.pg) {
-        console.error('Error: pgQueue must be used to ' + 
-                      'have multiple processes.');
-        return process.exit(1);
-    }
-
-    var spawn = require('child_process').spawn, args = [
-        __filename, '-c', false, '-t', argv.t, '-f', 
-        argv.f, '--pg', argv.pg, '--pg-get-interval', 
-        argv['pg-get-interval'], '--pg-max-get-attempts',
-        argv['pg-max-get-attempts']
-    ];
-
-    if (argv.domains) {args.push('-d', argv.domains);}
-    if (argv.p) {args.push('-p', argv.p);}
-    if (argv.i) {args.push('-i', argv.i);}
-    if (argv.e) {args.push('-e', argv.e);}
-    if (argv['max-crawl-queue-length']) {
-        args.push('max-crawl-queue-length', 
-                  argv['max-crawl-queue-length']);
-    }
-    if (argv.ua) {args.push('--ua', argv.ua);}    
-    if (argv['max-redirects']) {
-        args.push('--max-redirects', 
-                  argv['max-redirects']);
-    }
-    if (argv.proxy) {args.push('--proxy', argv.proxy);}
-
-    for (var i = 0; i < argv.processes; i++) {
-        var crawler = spawn('node', args);
-
-        crawler.stdout.on('data', function (data) {
-            console.log(data.toString().trim());
-        });
-
-        crawler.stderr.on('data', function (data) {
-            console.error(data.toString().trim());
-        });
-    }
-}
-
 if (argv.domains) {
     var domains = argv.domains.split(',');
     argv.domains = [];
@@ -140,7 +79,7 @@ if (argv.domains) {
 var flexible = require('..');
 var crawler = flexible({
     url: argv.url,
-    domains: argv.domains,
+    domains: argv.domains || [],
     interval: argv.interval,
     encoding: argv.encoding,
     max_concurrency: argv.m,
@@ -163,14 +102,6 @@ var crawler = flexible({
 }).on('error', function (error) {
     console.error('Error:', error.message);
 });
-
-if (argv.pg) {
-    crawler.use(flexible.pgQueue({
-        uri: argv.pg,
-        get_interval: argv['pg-get-interval'],
-        max_get_attempts: argv['pg-max-get-attempts']
-    }));
-}
 
 if (argv.controls) {
     require('keypress')(process.stdin);

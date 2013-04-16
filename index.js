@@ -149,8 +149,8 @@ Crawler.prototype.navigate = function (location, callback) {
         location = 'http://' + location;
     }
 
-    if (this._domains && this._domains
-        .indexOf(parsed_location.hostname) === -1) {
+    if (this._domains && this._domains[0] &&
+        this._domains.indexOf(parsed_location.hostname) === -1) {
         if (callback) {
             callback(new Error('Location is not allowed.'));
         }
@@ -195,9 +195,9 @@ Crawler.prototype._process = function (queue_item, callback) {
                 }
                 
                 var handler = 
-                    new htmlparser.DefaultHandler(function (error, doc) {
+                    new htmlparser.DefaultHandler(function (error, dom) {
                         if (error) {next(error);}
-                        else {next(null, res.request, res, body, doc);}
+                        else {next(null, res.request, res, body, dom);}
                     }), parser = new htmlparser.Parser(handler);
                 
                 var body = '';
@@ -215,9 +215,9 @@ Crawler.prototype._process = function (queue_item, callback) {
             }).on('error', next);
         },
         // Discover, and navigate to, locations.
-        function (req, res, body, doc, next) {
+        function (req, res, body, dom, next) {
             var locations = [];
-            traverse(doc).forEach(function (node) {
+            traverse(dom).forEach(function (node) {
                 if (!node.attribs || !node.attribs.href) {return;}
 
                 var href = node.attribs.href;
@@ -258,13 +258,13 @@ Crawler.prototype._process = function (queue_item, callback) {
                     
                     callback(null);
                 });
-            }, function () {next(null, req, res, body, doc);});
+            }, function () {next(null, req, res, body, dom);});
         }
-    ], function (error, req, res, body, doc) {
+    ], function (error, req, res, body, dom) {
         if (error) {callback(error);} 
         else {
             self.crawl(function (error) {
-                callback(error, req, res, body, doc);
+                callback(error, req, res, body, dom);
             }); 
         }
     });
@@ -282,7 +282,7 @@ Crawler.prototype._crawl = function (callback) {
             if (error) {return callback(error);}
             if (!queue_item) {return callback(fill = false);}
 
-            self._crawl_queue.push(queue_item, function (error, req, res, body, doc) {
+            self._crawl_queue.push(queue_item, function (error, req, res, body, dom) {
                 if (error) {
                     error.queue_item = queue_item;
                     self.emit('error', error);
@@ -292,16 +292,18 @@ Crawler.prototype._crawl = function (callback) {
                     }
                 }                
 
-                self.queue.end(queue_item, error, function (error, queue_item) {
-                    if (error) {
-                        error.queue_item = queue_item;
-                        return self.emit('error', error);
-                    } 
+                self.queue.end(queue_item, error, function (end_error, queue_item) {
+                    if (end_error) {
+                        end_error.queue_item = queue_item;
+                        return self.emit('error', end_error);
+                    }
+
+                    if (error) {return;}
                     
                     async.waterfall([
-                        function (next) {next(null, self, req, res, body, doc);}
+                        function (next) {next(null, self, req, res, body, dom);}
                     ].concat(self._middleware.concat([
-                        function (crawler, req, res, body, doc, next) {
+                        function (crawler, req, res, body, dom, next) {
                             self.emit('document', req, res, body, doc); 
 
                             next(null);
