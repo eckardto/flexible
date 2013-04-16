@@ -54,6 +54,7 @@
         "htmlparser": "*",
         "traverse": "*",
         "pg": "*",
-        "optimist": "*"
+        "optimist": "*",
+        "keypress": "*"
     }
 }
