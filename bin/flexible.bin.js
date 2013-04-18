@@ -107,17 +107,19 @@ var crawler = flexible({
 });
 
 if (argv.controls) {
-    require('keypress')(process.stdin);
+    process.stdin.on('data', function (s) {
+        s = s.toString();
 
-    process.stdin.on('keypress', function (ch, key) {
-        if (key && key.ctrl) {
-            switch (key.name) {
-            case 'p': crawler.pause(); break;
-            case 'r': crawler.resume(); break;
-            case 'a': crawler.abort(); break;
-            case 'c': process.exit(); break;
-            default: break;
-            }
+        if (s > '\x1a') {return;}
+
+        var char_code = s.charCodeAt(0) + 
+            'a'.charCodeAt(0) - 1;
+        switch (String.fromCharCode(char_code)) {
+        case 'p': crawler.pause(); break;
+        case 'r': crawler.resume(); break;
+        case 'a': crawler.abort(); break;
+        case 'c': process.exit(); break;
+        default: break;
         }
     });
 

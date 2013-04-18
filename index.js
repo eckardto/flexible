@@ -101,8 +101,8 @@ function Crawler(options) {
 
     var self = this;
     this._crawl_queue = async
-        .queue(function (item, callback) {
-            self._process(item, callback);
+        .queue(function (queue_item, callback) {
+            self._process(queue_item, callback);
         }, this._max_concurrency);   
     this._crawl_queue.drain = function () {
         self._complete();
@@ -161,7 +161,7 @@ Crawler.prototype.navigate = function (location, callback) {
     return this;
 };
 
-Crawler.prototype._process = function (item, callback) {
+Crawler.prototype._process = function (queue_item, callback) {
     var self = this;
     async.waterfall([
         // Delay according to crawler interval.
@@ -169,7 +169,7 @@ Crawler.prototype._process = function (item, callback) {
         // Download, while parsing, the document.
         function (next) {
             var req = request({
-                url: item.url, 
+                url: queue_item.url, 
                 encoding: self._encoding ?
                     null : undefined,
                 headers: self._headers,
@@ -265,13 +265,13 @@ Crawler.prototype._process = function (item, callback) {
     ], function (error, req, res, body, dom) {
         if (error) {return callback(error);} 
 
-        item.request = req;
-        item.response = res;
-        item.body = body;
-        item.dom = dom;
+        queue_item.request = req;
+        queue_item.response = res;
+        queue_item.body = body;
+        queue_item.dom = dom;
 
         self.crawl(function (error) {
-            callback(error, item);
+            callback(error, queue_item);
         }); 
     });
 
@@ -284,13 +284,13 @@ Crawler.prototype._crawl = function (callback) {
         return fill && self._crawl_queue.length() < 
             self._max_crawl_queue_length;
     }, function (callback) {
-        self.queue.get(function (error, item) {
+        self.queue.get(function (error, queue_item) {
             if (error) {return callback(error);}
-            if (!item) {return callback(fill = false);}
+            if (!queue_item) {return callback(fill = false);}
 
-            self._crawl_queue.push(item, function (error, item) {
+            self._crawl_queue.push(queue_item, function (error, queue_item) {
                 if (error) {
-                    error.item = item;
+                    error.queue_item = queue_item;
                     self.emit('error', error);
 
                     if (!error.message) {
@@ -298,19 +298,19 @@ Crawler.prototype._crawl = function (callback) {
                     }
                 }                
 
-                self.queue.end(item, error, function (end_error, item) {
+                self.queue.end(queue_item, error, function (end_error, queue_item) {
                     if (end_error) {
-                        end_error.item = item;
+                        end_error.queue_item = queue_item;
                         return self.emit('error', end_error);
                     }
 
                     if (error) {return;}
                     
                     async.waterfall([
-                        function (next) {next(null, self, item);}
+                        function (next) {next(null, self, queue_item);}
                     ].concat(self._middleware.concat([
-                        function (crawler, item, next) {
-                            self.emit('document', item); 
+                        function (crawler, queue_item, next) {
+                            self.emit('document', queue_item); 
                             
                             next(null);
                         }
@@ -350,7 +350,7 @@ Crawler.prototype.pause = function () {
  * Resume crawling.
  */
 Crawler.prototype.resume = function () {
-    if (!this._completed && !this._paused) {
+    if (!this._completed && this._paused) {
         this.crawl = this._crawl;
 
         this._paused = false;
