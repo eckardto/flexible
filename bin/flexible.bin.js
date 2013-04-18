@@ -90,8 +90,11 @@ var crawler = flexible({
     follow_redirect: argv['follow-redirect'],
     max_redirects: argv['max-redirects'],
     proxy: argv.proxy
-}).route('*', function (req, res) {
+}).route('*', function (req, res, body, item, next) {
     console.log('Crawled:', req.uri.href);
+
+    // Pass control to the next matching route.    
+    next(null);
 }).once('complete', function () {
     console.log('Crawling has been completed.');
     process.exit();

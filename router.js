@@ -20,6 +20,7 @@
  * along with Flexible.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+var async = require('async');
 var url = require('url');
 
 /**
@@ -78,26 +79,22 @@ module.exports = function () {
             return crawler;
         };
 
-        crawler._middleware.push(function (crawler, queue_item, next) {
-            for (var i = 0; i < crawler._routes.length; i++) {
-                var params = crawler._routes[i]
-                    .match(queue_item.request.uri.href);
-                if (params) {
-                    for (var j in params) {
-                        if (params.hasOwnProperty(j)) {
-                            queue_item.request.params[j] = params[j];
-                        }
+        crawler._middleware.push(function (crawler, item, next) {
+            async.forEach(crawler._routes, function (route, callback) {
+                var params = route.match(item.request.uri.href);
+                if (!params) {return callback(null);}
+
+                for (var j in params) {
+                    if (params.hasOwnProperty(j)) {
+                        item.request.params[j] = params[j];
                     }
-
-                    crawler._routes[i]
-                        .route(queue_item.request, queue_item.response, 
-                               queue_item.body, queue_item); 
-
-                    break;
                 }
-            }
 
-            next(null, crawler, queue_item);
+                route.route(item.request, item.response, 
+                            item.body, item, callback); 
+            });
+
+            next(null, crawler, item);
         });
     };
 };
