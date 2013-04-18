@@ -263,12 +263,16 @@ Crawler.prototype._process = function (queue_item, callback) {
             }, function () {next(null, req, res, body, dom);});
         }
     ], function (error, req, res, body, dom) {
-        if (error) {callback(error);} 
-        else {
-            self.crawl(function (error) {
-                callback(error, req, res, body, dom);
-            }); 
-        }
+        if (error) {return callback(error);} 
+
+        queue_item.request = req;
+        queue_item.response = res;
+        queue_item.body = body;
+        queue_item.dom = dom;
+
+        self.crawl(function (error) {
+            callback(error, queue_item);
+        }); 
     });
 
     return this;
@@ -284,7 +288,7 @@ Crawler.prototype._crawl = function (callback) {
             if (error) {return callback(error);}
             if (!queue_item) {return callback(fill = false);}
 
-            self._crawl_queue.push(queue_item, function (error, req, res, body, dom) {
+            self._crawl_queue.push(queue_item, function (error, queue_item) {
                 if (error) {
                     error.queue_item = queue_item;
                     self.emit('error', error);
@@ -303,10 +307,10 @@ Crawler.prototype._crawl = function (callback) {
                     if (error) {return;}
                     
                     async.waterfall([
-                        function (next) {next(null, self, req, res, body, dom);}
+                        function (next) {next(null, self, queue_item);}
                     ].concat(self._middleware.concat([
-                        function (crawler, req, res, body, dom, next) {
-                            self.emit('document', req, res, body, dom); 
+                        function (crawler, queue_item, next) {
+                            self.emit('document', queue_item); 
                             
                             next(null);
                         }

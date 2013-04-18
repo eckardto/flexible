@@ -78,27 +78,26 @@ module.exports = function () {
             return crawler;
         };
 
-        crawler._middleware
-            .push(function (crawler, req, res, body, dom, next) {
-                for (var i = 0; i < crawler._routes.length; i++) {
-                    var params = crawler._routes[i].match(req.uri.href);
-                    if (params) {
-                        if (!req.params) {req.params = params;}
-                        else {
-                            for (var j in params) {
-                                if (params.hasOwnProperty(j)) {
-                                    req.params[j] = params[j];
-                                }
-                            }
+        crawler._middleware.push(function (crawler, queue_item, next) {
+            for (var i = 0; i < crawler._routes.length; i++) {
+                var params = crawler._routes[i]
+                    .match(queue_item.request.uri.href);
+                if (params) {
+                    for (var j in params) {
+                        if (params.hasOwnProperty(j)) {
+                            queue_item.request.params[j] = params[j];
                         }
-
-                        crawler._routes[i].route(req, res, body, dom); 
-
-                        break;
                     }
-                }
 
-                next(null, crawler, req, res, body, dom);
-            });
+                    crawler._routes[i]
+                        .route(queue_item.request, queue_item.response, 
+                               queue_item.body, queue_item); 
+
+                    break;
+                }
+            }
+
+            next(null, crawler, queue_item);
+        });
     };
 };

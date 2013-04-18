@@ -74,11 +74,6 @@ Queue.prototype.get = function (callback) {
  * End processing of item.
  */
 Queue.prototype.end = function (item, error, callback) {
-    if (typeof error === 'function') {
-        callback = error; 
-        error = undefined;
-    }
-
     item.processing = false;
     item.completed = true;
     item.error = error;
