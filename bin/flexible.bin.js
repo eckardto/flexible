@@ -7,7 +7,6 @@ var argv = require('optimist')
            'module for Node.js.\nUsage: $0')
 
     .alias('url', 'uri')
-    .alias('url', 'u')
     .string('url')
     .describe('url', 'URL of web page to ' + 
               'begin crawling on.')
@@ -33,11 +32,12 @@ var argv = require('optimist')
     .describe('max-concurrency', 'Maximum ' + 
               'concurrency of each crawler.')
 
+    .alias('max-crawl-queue-length', 'M')
     .default('max-crawl-queue-length', 10)
     .describe('max-crawl-queue-length', 
               'Maximum length of the crawl queue.')
 
-    .alias('user-agent', 'ua')
+    .alias('user-agent', 'A')
     .string('user-agent')
     .describe('user-agent', 'User-agent to ' + 
               'identify each crawler as.')
@@ -47,7 +47,6 @@ var argv = require('optimist')
     .describe('timeout', 'Maximum seconds a ' + 
               'request can take.')
 
-    .alias('follow-redirect', 'f')
     .boolean('follow-redirect')
     .describe('follow-redirect', 'Follow HTTP ' + 
               'redirection responses.')
@@ -56,6 +55,7 @@ var argv = require('optimist')
     .describe('max-redirects', 'Maximum ' + 
               'amount of redirects.')
 
+    .alias('proxy', 'p')
     .string('proxy')
     .describe('proxy', 'An HTTP proxy ' + 
               'to use for requests.')
@@ -82,12 +82,12 @@ var crawler = flexible({
     domains: argv.domains || [],
     interval: argv.interval,
     encoding: argv.encoding,
-    max_concurrency: argv.m,
+    max_concurrency: argv['max-concurrency'],
     max_crawl_queue_length: 
     argv['max-crawl-queue-length'],
-    user_agent: argv.ua,
-    timeout: argv.t,
-    follow_redirect: argv.f,
+    user_agent: argv['user-agent'],
+    timeout: argv.timeout,
+    follow_redirect: argv['follow-redirect'],
     max_redirects: argv['max-redirects'],
     proxy: argv.proxy
 }).route('*', function (req, res) {

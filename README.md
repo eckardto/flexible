@@ -55,18 +55,18 @@ Crawl the web using the Flexible module for Node.js.
 Usage: node [...]/flexible.bin.js
 
 Options:
-  --url, --uri, -u          URL of web page to begin crawling on.                        [string]  [required]
-  --domains, -d             List of domains to allow crawling of.                        [string]
-  --interval, -i            Request interval of each crawler.                            [default: 250]
-  --encoding, -e            Encoding of response body for decoding.                      [string]
-  --max-concurrency, -m     Maximum concurrency of each crawler.                         [default: 4]
-  --max-crawl-queue-length  Maximum length of the crawl queue.                           [default: 10]
-  --user-agent, --ua        User-agent to identify each crawler as.                      [string]
-  --timeout, -t             Maximum seconds a request can take.                          [default: false]
-  --follow-redirect, -f     Follow HTTP redirection responses.                           [boolean]  [default: true]
-  --max-redirects           Maximum amount of redirects.                               
-  --proxy                   An HTTP proxy to use for requests.                           [string]
-  --controls, -c            Enable pause (ctrl-p), resume (ctrl-r), and abort (ctrl-a).  [boolean]  [default: true]
+  --url, --uri                  URL of web page to begin crawling on.                        [string]  [required]
+  --domains, -d                 List of domains to allow crawling of.                        [string]
+  --interval, -i                Request interval of each crawler.                            [default: 250]
+  --encoding, -e                Encoding of response body for decoding.                      [string]
+  --max-concurrency, -m         Maximum concurrency of each crawler.                         [default: 4]
+  --max-crawl-queue-length, -M  Maximum length of the crawl queue.                           [default: 10]
+  --user-agent, -A              User-agent to identify each crawler as.                      [string]
+  --timeout, -t                 Maximum seconds a request can take.                          [default: false]
+  --follow-redirect             Follow HTTP redirection responses.                           [boolean]  [default: true]
+  --max-redirects               Maximum amount of redirects.                               
+  --proxy, -p                   An HTTP proxy to use for requests.                           [string]
+  --controls, -c                Enable pause (ctrl-p), resume (ctrl-r), and abort (ctrl-a).  [boolean]  [default: true]
 ```
 
 ## API
@@ -101,6 +101,10 @@ Have the crawler abort crawling.
 Emitted when a location has been successfully navigated (queued) to.
 * `document` (req, res, body, dom, item)
 Emitted when a document is finished being processed by the crawler.
+* `paused`
+Emitted when the crawler has paused crawling.
+* `resumed`
+Emitted when the crawler has resumed crawling.
 * `complete`
 Emitted when all navigated (queued) to locations have been crawled.
 
