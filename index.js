@@ -28,10 +28,10 @@ var traverse = require('traverse');
 var url = require('url');
 var util = require('util');
 var events = require('events');
+var querystring = require('querystring');
 
 var queue = require('./queue.js');
 var router = require('./router.js');
-var querystring = require('./querystring.js');
 
 /**
  * Initiate a crawler and start crawling.
@@ -48,9 +48,7 @@ module.exports = function (options) {
     }
     
     var crawler = (new Crawler(options))
-        .use(queue())
-        .use(querystring())
-        .use(router());
+        .use(queue()).use(router());
 
     async.waterfall([
         function (next) {
@@ -71,7 +69,6 @@ module.exports = function (options) {
 module.exports.Crawler = Crawler;
 module.exports.queue = queue;
 module.exports.pgQueue = require('./pg-queue.js');
-module.exports.querystring = querystring;
 module.exports.router = router;
 
 util.inherits(Crawler, events.EventEmitter);
@@ -171,7 +168,7 @@ Crawler.prototype._process = function (queue_item, callback) {
         function (next) {setTimeout(next, self._interval);},
         // Download, while parsing, the document.
         function (next) {
-            request({
+            var req = request({
                 url: queue_item.url, 
                 encoding: self._encoding ?
                     null : undefined,
@@ -196,8 +193,13 @@ Crawler.prototype._process = function (queue_item, callback) {
                 
                 var handler = 
                     new htmlparser.DefaultHandler(function (error, dom) {
-                        if (error) {next(error);}
-                        else {next(null, res.request, res, body, dom);}
+                        if (error) {return next(error);}
+
+                        if (req.uri && req.uri.query) {
+                            req.params = querystring.parse(req.uri.query);
+                        } else {req.params = {};}
+
+                        next(null, req.toJSON(), res.toJSON(), body, dom);
                     }), parser = new htmlparser.Parser(handler);
                 
                 var body = '';
@@ -304,8 +306,8 @@ Crawler.prototype._crawl = function (callback) {
                         function (next) {next(null, self, req, res, body, dom);}
                     ].concat(self._middleware.concat([
                         function (crawler, req, res, body, dom, next) {
-                            self.emit('document', req, res, body, doc); 
-
+                            self.emit('document', req, res, body, dom); 
+                            
                             next(null);
                         }
                     ])), function (error) {
