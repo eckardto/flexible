@@ -30,10 +30,11 @@ function Queue(options) {
  */
 Queue.prototype._setup = function (callback) {
     var query = 'CREATE TABLE IF NOT EXISTS queue ' +
-        '(url text UNIQUE, processing boolean, ' + 
-        'completed boolean, error text)';
-    this._client
-        .query(query, function (error) {callback(error)});
+        '(url text UNIQUE, processing ' + 
+        'boolean, completed boolean)';
+    this._client.query(query, function (error) {
+        callback(error);
+    });
 };
 
 /**
@@ -44,17 +45,15 @@ Queue.prototype.add = function (location, callback) {
         queue: this, 
         url: location, 
         processing: false, 
-        completed: false,
-        error: undefined
+        completed: false
     };
 
     var self = this;
-    var query = 'INSERT INTO queue VALUES ($1, $2, $3, $4)';
+    var query = 'INSERT INTO queue VALUES ($1, $2, $3)';
     this._client.query(query, [
         item.url, 
         item.processing, 
-        item.completed, 
-        item.error
+        item.completed
     ], function (error) {
         if (error) {
             if (error.code) {
@@ -96,8 +95,7 @@ Queue.prototype.get = function (callback) {
                 callback(null, results.rows[0] ? {
                     url: results.rows[0].url,
                     processing: true,
-                    completed: false,
-                    error: undefined
+                    completed: false
                 } : null);
             }
         });
@@ -107,14 +105,13 @@ Queue.prototype.get = function (callback) {
 /**
  * End processing of item.
  */
-Queue.prototype.end = function (item, error, callback) {
+Queue.prototype.end = function (item, callback) {
     item.processing = false;
     item.completed = true;
-    item.error = error;
 
     var query = 'UPDATE queue SET processing = false, ' +
-        'completed = true, error = $1 WHERE url = $2';
-    this._client.query(query, [
-        item.error ? item.error.message : null, item.url
-    ], function (error) {callback(error, item);});
+        'completed = true, WHERE url = $1';
+    this._client.query(query, [item.url], function (error) {
+        callback(error, item);
+    });
 };

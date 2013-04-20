@@ -41,8 +41,7 @@ Queue.prototype.add = function (location, callback) {
             queue: this, 
             url: location, 
             processing: false, 
-            completed: false,
-            error: undefined
+            completed: false
         };
 
         this._items.push(item);
@@ -73,10 +72,9 @@ Queue.prototype.get = function (callback) {
 /**
  * End processing of item.
  */
-Queue.prototype.end = function (item, error, callback) {
+Queue.prototype.end = function (item, callback) {
     item.processing = false;
     item.completed = true;
-    item.error = error;
 
     callback(null, item);
 };

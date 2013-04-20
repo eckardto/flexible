@@ -267,7 +267,7 @@ Crawler.prototype._process = function (item, callback) {
         item.response = res;
         item.body = body;
         item.dom = dom;
-
+        
         if (error) {callback(error, item);}
         else {
             self.crawl(function (error) {
@@ -299,7 +299,7 @@ Crawler.prototype._crawl = function (callback) {
                     }
                 }                
 
-                self.queue.end(item, error, function (end_error, item) {
+                self.queue.end(item, function (end_error, item) {
                     if (end_error) {
                         end_error.item = item;
                         return self.emit('error', end_error);
