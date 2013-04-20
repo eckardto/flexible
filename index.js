@@ -268,10 +268,11 @@ Crawler.prototype._process = function (item, callback) {
         item.body = body;
         item.dom = dom;
 
-        if (error) {callback(error, item);} else {
+        if (error) {callback(error, item);}
+        else {
             self.crawl(function (error) {
                 callback(error, item);
-            }); 
+            });
         }
     });
 
