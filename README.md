@@ -57,16 +57,19 @@ Usage: node [...]/flexible.bin.js
 Options:
   --url, --uri                  URL of web page to begin crawling on.                        [string]  [required]
   --domains, -d                 List of domains to allow crawling of.                        [string]
-  --interval, -i                Request interval of each crawler.                            [default: 250]
+  --interval, -i                Request interval of each crawler.                          
   --encoding, -e                Encoding of response body for decoding.                      [string]
-  --max-concurrency, -m         Maximum concurrency of each crawler.                         [default: 4]
-  --max-crawl-queue-length, -M  Maximum length of the crawl queue.                           [default: 10]
+  --max-concurrency, -m         Maximum concurrency of each crawler.                       
+  --max-crawl-queue-length, -M  Maximum length of the crawl queue.                         
   --user-agent, -A              User-agent to identify each crawler as.                      [string]
-  --timeout, -t                 Maximum seconds a request can take.                          [default: false]
-  --follow-redirect             Follow HTTP redirection responses.                           [boolean]  [default: true]
+  --timeout, -t                 Maximum seconds a request can take.                        
+  --follow-redirect             Follow HTTP redirection responses.                           [boolean]
   --max-redirects               Maximum amount of redirects.                               
   --proxy, -p                   An HTTP proxy to use for requests.                           [string]
   --controls, -c                Enable pause (ctrl-p), resume (ctrl-r), and abort (ctrl-a).  [boolean]  [default: true]
+  --pg-uri, --pg-url            PostgreSQL URI to connect to for queue.                      [string]
+  --pg-get-interval             PostgreSQL queue get request interval.                     
+  --pg-max-get-attempts         PostgresSQL queue max get attempts.
 ```
 
 ## API

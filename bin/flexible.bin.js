@@ -18,7 +18,6 @@ var argv = require('optimist')
               'to allow crawling of.')
 
     .alias('interval', 'i')
-    .default('interval', 250)
     .describe('interval', 'Request ' + 
               'interval of each crawler.')
 
@@ -28,12 +27,10 @@ var argv = require('optimist')
               'body for decoding.')
 
     .alias('max-concurrency', 'm')
-    .default('max-concurrency', 4)
     .describe('max-concurrency', 'Maximum ' + 
               'concurrency of each crawler.')
 
     .alias('max-crawl-queue-length', 'M')
-    .default('max-crawl-queue-length', 10)
     .describe('max-crawl-queue-length', 
               'Maximum length of the crawl queue.')
 
@@ -43,14 +40,12 @@ var argv = require('optimist')
               'identify each crawler as.')
 
     .alias('timeout', 't')
-    .default('timeout', false)
     .describe('timeout', 'Maximum seconds a ' + 
               'request can take.')
 
     .boolean('follow-redirect')
     .describe('follow-redirect', 'Follow HTTP ' + 
               'redirection responses.')
-    .default('follow-redirect', true)
 
     .describe('max-redirects', 'Maximum ' + 
               'amount of redirects.')
@@ -62,9 +57,23 @@ var argv = require('optimist')
 
     .alias('controls', 'c')
     .boolean('controls')
-    .describe('controls', 'Enable pause (ctrl-p), ' + 
-              'resume (ctrl-r), and abort (ctrl-a).')
+    .describe('controls', 'Enable pause ' + 
+              '(ctrl-p), resume (ctrl-r), ' + 
+              'and abort (ctrl-a).')
     .default('controls', true)
+
+    .alias('pg-uri', 'pg-url')
+    .string('pg-uri')
+    .describe('pg-uri', 'PostgreSQL URI ' + 
+              'to connect to for queue.')
+
+    .describe('pg-get-interval', 
+              'PostgreSQL queue ' + 
+              'get request interval.')
+
+    .describe('pg-max-get-attempts', 
+              'PostgresSQL queue ' + 
+              'max get attempts.')
 
     .argv;
 
@@ -102,6 +111,14 @@ var crawler = flexible({
 }).on('error', function (error) {
     console.error('Error:', error.message);
 });
+
+if (argv['pg-uri']) {
+    crawler.use(flexible.pgQueue({
+        uri: argv['pg-uri'],
+        get_interval: argv['pg-get-interval'],
+        max_get_attempts: argv['pg-max-get-attempts']
+    }));
+}
 
 if (argv.controls) {
     process.stdin.on('data', function (s) {
