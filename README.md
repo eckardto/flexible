@@ -99,7 +99,7 @@ Have the crawler abort crawling.
 
 * `navigated` (url)
 Emitted when a location has been successfully navigated (queued) to.
-* `document` (queue_item)
+* `document` (item)
 Emitted when a document is finished being processed by the crawler.
 * `paused`
 Emitted when the crawler has paused crawling.
