@@ -12,14 +12,14 @@ var flexible = require('flexible');
 var crawler = flexible('http://www.example.com/')
     .use(flexible.pgQueue('postgres://postgres:1234@localhost:5432/'))
 
-    .route('/search?q=', function (req, res, body, document, next) {
+    .route('/search?q=', function (req, res, body, doc, next) {
         console.log('Search results handled for query:', req.params.q);
     })
-    .route('/users/:name', function (req, res, body, document, next) {
+    .route('/users/:name', function (req, res, body, doc, next) {
         crawler.navigate('http://www.example.com/search?q=' + req.params.name);
     })
-    .route('*', function (req, res, body, document, next) {
-        console.log('Every other document is handled by this route.');
+    .route('*', function (req, res, body, doc, next) {
+        console.log('Every other doc is handled by this route.');
     })
 
     .on('complete', function () {console.log('Crawling finished!');})
@@ -99,7 +99,7 @@ Have the crawler abort crawling.
 
 * `navigated` (url)
 Emitted when a location has been successfully navigated (queued) to.
-* `document` (document)
+* `document` (doc)
 Emitted when a document is finished being processed by the crawler.
 * `paused`
 Emitted when the crawler has paused crawling.

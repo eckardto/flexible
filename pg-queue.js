@@ -38,10 +38,10 @@ Queue.prototype._setup = function (callback) {
 };
 
 /**
- * Add an document to the queue.
+ * Add an doc to the queue.
  */
 Queue.prototype.add = function (location, callback) {
-    var document = {
+    var doc = {
         queue: this, 
         url: location, 
         processing: false, 
@@ -51,9 +51,9 @@ Queue.prototype.add = function (location, callback) {
     var self = this;
     var query = 'INSERT INTO queue VALUES ($1, $2, $3)';
     this._client.query(query, [
-        document.url, 
-        document.processing, 
-        document.completed
+        doc.url, 
+        doc.processing, 
+        doc.completed
     ], function (error) {
         if (error) {
             if (error.code) {
@@ -63,15 +63,15 @@ Queue.prototype.add = function (location, callback) {
                         else {self.add(location, callback);}
                     });
                 } else if (error.code === '23505') {
-                    callback(null, document);
+                    callback(null, doc);
                 } else {callback(error);}
             } else {callback(error);}
-        } else {callback(null, document);}
+        } else {callback(null, doc);}
     });
 };
 
 /**
- * Get an document to process.
+ * Get an doc to process.
  */
 Queue.prototype.get = function (callback) {
     var query = 'UPDATE queue SET processing = true WHERE ' +
@@ -103,15 +103,16 @@ Queue.prototype.get = function (callback) {
 };
 
 /**
- * End processing of document.
+ * End processing of doc.
  */
-Queue.prototype.end = function (document, callback) {
-    document.processing = false;
-    document.completed = true;
+Queue.prototype.end = function (doc, callback) {
+    doc.processing = false;
+    doc.completed = true;
 
     var query = 'UPDATE queue SET processing = false, ' +
-        'completed = true, WHERE url = $1';
-    this._client.query(query, [document.url], function (error) {
-        callback(error, document);
+        'completed = true WHERE url = $1';
+    this._client.query(query, [doc.url], function (error) {
+        console.log(error);
+        callback(error, doc);
     });
 };
