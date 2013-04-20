@@ -112,7 +112,6 @@ Queue.prototype.end = function (doc, callback) {
     var query = 'UPDATE queue SET processing = false, ' +
         'completed = true WHERE url = $1';
     this._client.query(query, [doc.url], function (error) {
-        console.log(error);
         callback(error, doc);
     });
 };
