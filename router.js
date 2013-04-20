@@ -79,22 +79,22 @@ module.exports = function () {
             return crawler;
         };
 
-        crawler._middleware.push(function (crawler, item, next) {
+        crawler._middleware.push(function (crawler, document, next) {
             async.forEach(crawler._routes, function (route, callback) {
-                var params = route.match(item.request.uri.href);
+                var params = route.match(document.request.uri.href);
                 if (!params) {return callback(null);}
 
                 for (var j in params) {
                     if (params.hasOwnProperty(j)) {
-                        item.request.params[j] = params[j];
+                        document.request.params[j] = params[j];
                     }
                 }
 
-                route.route(item.request, item.response, 
-                            item.body, item, callback); 
+                route.route(document.request, document.response, 
+                            document.body, document, callback); 
             });
 
-            next(null, crawler, item);
+            next(null, crawler, document);
         });
     };
 };

@@ -27,54 +27,54 @@ module.exports = function () {
 };
 
 function Queue() {
-    this._items = []; 
+    this._documents = []; 
     this._history = {};
 }
 
 /**
- * Add an item to the queue.
+ * Add an document to the queue.
  */
 Queue.prototype.add = function (location, callback) {
     if (this._history[location]) {callback(null);} 
     else {   
-        var item = {
+        var document = {
             queue: this, 
             url: location, 
             processing: false, 
             completed: false
         };
 
-        this._items.push(item);
+        this._documents.push(document);
         this._history[location] = true;
         
-        callback(null, item);
+        callback(null, document);
     }
 };
 
 /**
- * Get an item to process.
+ * Get an document to process.
  */
 Queue.prototype.get = function (callback) {
-    for (var i = 0, item; !item && 
-         i < this._items.length; i++) {
-        var new_item = this._items[i];
-        if (!new_item.completed && 
-            !new_item.processing) {
-            item = new_item; break;
+    for (var i = 0, document; !document && 
+         i < this._documents.length; i++) {
+        var new_document = this._documents[i];
+        if (!new_document.completed && 
+            !new_document.processing) {
+            document = new_document; break;
         }        
     }
 
-    if (item) {item.processing = true;}
+    if (document) {document.processing = true;}
 
-    callback(null, item);
+    callback(null, document);
 };
 
 /**
- * End processing of item.
+ * End processing of document.
  */
-Queue.prototype.end = function (item, callback) {
-    item.processing = false;
-    item.completed = true;
+Queue.prototype.end = function (document, callback) {
+    document.processing = false;
+    document.completed = true;
 
-    callback(null, item);
+    callback(null, document);
 };

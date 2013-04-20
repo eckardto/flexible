@@ -101,8 +101,8 @@ function Crawler(options) {
 
     var self = this;
     this._crawl_queue = async
-        .queue(function (item, callback) {
-            self._process(item, callback);
+        .queue(function (document, callback) {
+            self._process(document, callback);
         }, this._max_concurrency);   
     this._crawl_queue.drain = function () {
         self._complete();
@@ -161,7 +161,7 @@ Crawler.prototype.navigate = function (location, callback) {
     return this;
 };
 
-Crawler.prototype._process = function (item, callback) {
+Crawler.prototype._process = function (document, callback) {
     var self = this;
     async.waterfall([
         // Delay according to crawler interval.
@@ -169,7 +169,7 @@ Crawler.prototype._process = function (item, callback) {
         // Download, while parsing, the document.
         function (next) {
             var req = request({
-                url: item.url, 
+                url: document.url, 
                 encoding: self._encoding ?
                     null : undefined,
                 headers: self._headers,
@@ -263,15 +263,15 @@ Crawler.prototype._process = function (item, callback) {
             }, function () {next(null, req, res, body, dom);});
         }
     ], function (error, req, res, body, dom) {
-        item.request = req;
-        item.response = res;
-        item.body = body;
-        item.dom = dom;
+        document.request = req;
+        document.response = res;
+        document.body = body;
+        document.dom = dom;
         
-        if (error) {callback(error, item);}
+        if (error) {callback(error, document);}
         else {
             self.crawl(function (error) {
-                callback(error, item);
+                callback(error, document);
             });
         }
     });
@@ -285,13 +285,13 @@ Crawler.prototype._crawl = function (callback) {
         return fill && self._crawl_queue.length() < 
             self._max_crawl_queue_length;
     }, function (callback) {
-        self.queue.get(function (error, item) {
+        self.queue.get(function (error, document) {
             if (error) {return callback(error);}
-            if (!item) {return callback(fill = false);}
+            if (!document) {return callback(fill = false);}
 
-            self._crawl_queue.push(item, function (error, item) {
+            self._crawl_queue.push(document, function (error, document) {
                 if (error) {
-                    error.item = item;
+                    error.document = document;
                     self.emit('error', error);
 
                     if (!error.message) {
@@ -299,19 +299,19 @@ Crawler.prototype._crawl = function (callback) {
                     }
                 }                
 
-                self.queue.end(item, function (end_error, item) {
+                self.queue.end(document, function (end_error, document) {
                     if (end_error) {
-                        end_error.item = item;
+                        end_error.document = document;
                         return self.emit('error', end_error);
                     }
 
                     if (error) {return;}
                     
                     async.waterfall([
-                        function (next) {next(null, self, item);}
+                        function (next) {next(null, self, document);}
                     ].concat(self._middleware.concat([
-                        function (crawler, item, next) {
-                            self.emit('document', item); 
+                        function (crawler, document, next) {
+                            self.emit('document', document); 
                             
                             next(null);
                         }

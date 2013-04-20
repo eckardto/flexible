@@ -38,10 +38,10 @@ Queue.prototype._setup = function (callback) {
 };
 
 /**
- * Add an item to the queue.
+ * Add an document to the queue.
  */
 Queue.prototype.add = function (location, callback) {
-    var item = {
+    var document = {
         queue: this, 
         url: location, 
         processing: false, 
@@ -51,9 +51,9 @@ Queue.prototype.add = function (location, callback) {
     var self = this;
     var query = 'INSERT INTO queue VALUES ($1, $2, $3)';
     this._client.query(query, [
-        item.url, 
-        item.processing, 
-        item.completed
+        document.url, 
+        document.processing, 
+        document.completed
     ], function (error) {
         if (error) {
             if (error.code) {
@@ -63,15 +63,15 @@ Queue.prototype.add = function (location, callback) {
                         else {self.add(location, callback);}
                     });
                 } else if (error.code === '23505') {
-                    callback(null, item);
+                    callback(null, document);
                 } else {callback(error);}
             } else {callback(error);}
-        } else {callback(null, item);}
+        } else {callback(null, document);}
     });
 };
 
 /**
- * Get an item to process.
+ * Get an document to process.
  */
 Queue.prototype.get = function (callback) {
     var query = 'UPDATE queue SET processing = true WHERE ' +
@@ -103,15 +103,15 @@ Queue.prototype.get = function (callback) {
 };
 
 /**
- * End processing of item.
+ * End processing of document.
  */
-Queue.prototype.end = function (item, callback) {
-    item.processing = false;
-    item.completed = true;
+Queue.prototype.end = function (document, callback) {
+    document.processing = false;
+    document.completed = true;
 
     var query = 'UPDATE queue SET processing = false, ' +
         'completed = true, WHERE url = $1';
-    this._client.query(query, [item.url], function (error) {
-        callback(error, item);
+    this._client.query(query, [document.url], function (error) {
+        callback(error, document);
     });
 };
