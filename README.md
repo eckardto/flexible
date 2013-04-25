@@ -30,7 +30,7 @@ var crawler = flexible('http://www.example.com/')
 * Asynchronous friendly, and evented, API for building flexible, scalable, and distributed web crawlers.
 * An array based queue for moderate crawls, and a PostgreSQL based queue for massive, and efficient, crawls.
 * Uses a fast, lightweight, and forgivable, HTML parser to ensure proper document compatibility for crawling.
-* Component system; use different queues, a router (wildcards, placeholders, etc), querystring parser, etc.
+* Component system; use different queues, a router (wildcards, placeholders, etc), and other components.
 
 ### Installation
 
