@@ -19,7 +19,7 @@ var crawler = flexible('http://www.example.com/')
         crawler.navigate('http://www.example.com/search?q=' + req.params.name);
     })
     .route('*', function (req, res, body, doc, next) {
-        console.log('Every other doc is handled by this route.');
+        console.log('Every other document is handled by this route.');
     })
 
     .on('complete', function () {console.log('Crawling finished!');})
