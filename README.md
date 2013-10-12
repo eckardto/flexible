@@ -1,9 +1,11 @@
-Flexible Web-Crawler Module
-===========================
+### This project has been superseded by [node-web-crawler](https://github.com/eckardto/node-web-crawler).
 
-Easily build flexible, scalable, and distributed, web crawlers for Node.js.
+Flexible Web Crawler
+====================
 
-#### Simple Example
+Easily build flexible, scalable, and distributed, web crawlers for [node](http://nodejs.org).
+
+## Simple Example
 
 ```javascript
 var flexible = require('flexible');
@@ -12,27 +14,34 @@ var flexible = require('flexible');
 var crawler = flexible('http://www.example.com/')
     .use(flexible.pgQueue('postgres://postgres:1234@localhost:5432/'))
 
-    .route('/search?q=', function (req, res, body, doc, next) {
+    .route('*/search?q=', function (req, res, body, doc, next) {
         console.log('Search results handled for query:', req.params.q);
     })
-    .route('/users/:name', function (req, res, body, doc, next) {
+    .route('*/users/:name', function (req, res, body, doc, next) {
         crawler.navigate('http://www.example.com/search?q=' + req.params.name);
     })
     .route('*', function (req, res, body, doc, next) {
         console.log('Every other document is handled by this route.');
     })
 
-    .on('complete', function () {console.log('Crawling finished!');})
-    .on('error', function (error) {console.error(error);});
+    .on('complete', function () {
+        console.log('All of the queued locations have been crawled.');
+    })
+    
+    .on('error', function (error) {
+        if (error.message) {
+            console.error('Error:', error.message);
+        } else {console.error(error);}
+    });
 
 ```
-### What does Flexible provide?
+## Features
 * Asynchronous friendly, and evented, API for building flexible, scalable, and distributed web crawlers.
 * An array based queue for moderate crawls, and a PostgreSQL based queue for massive, and efficient, crawls.
 * Uses a fast, lightweight, and forgivable, HTML parser to ensure proper document compatibility for crawling.
 * Component system; use different queues, a router (wildcards, placeholders, etc), and other components.
 
-### Installation
+## Installation
 
 ```
 npm install flexible
@@ -46,12 +55,12 @@ cd flexible
 npm link
 ```
 
-### Complex Example / Demo
+## Complex Example / Demo
 
 ```
 flexible 
 
-Crawl the web using the Flexible module for Node.js.
+Crawl the web using Flexible for node.
 Usage: node [...]/flexible.bin.js
 
 Options:
@@ -74,28 +83,28 @@ Options:
 
 ## API
 
-### flexible([options])
+#### flexible([options])
 Returns a configured, navigated and or with crawling started, crawler instance.
 
-### new flexible.Crawler([options])
+#### new flexible.Crawler([options])
 Returns a new Crawler object.
 
-### Crawler#use([component], [callback])
+#### Crawler#use([component], [callback])
 Configure the crawler to use a component.
 
-### Crawler#navigate(url, [callback])
+#### Crawler#navigate(url, [callback])
 Process a location, and have the crawler navigate (queue) to it.
 
-### Crawler#crawl([callback])
+#### Crawler#crawl([callback])
 Have the crawler crawl (recursive).
 
-### Crawler#pause()
+#### Crawler#pause()
 Have the crawler pause crawling.
 
-### Crawler#resume()
+#### Crawler#resume()
 Have the crawler resume crawling.
 
-### Crawler#abort()
+#### Crawler#abort()
 Have the crawler abort crawling.
 
 ### Events

@@ -32,27 +32,27 @@ function Queue() {
 }
 
 /**
- * Add an doc to the queue.
+ * Add a document to the queue.
  */
-Queue.prototype.add = function (location, callback) {
-    if (this._history[location]) {callback(null);} 
+Queue.prototype.add = function (loc, callback) {
+    if (this._history[loc]) {callback(null);} 
     else {   
         var doc = {
             queue: this, 
-            url: location, 
+            url: loc, 
             processing: false, 
             completed: false
         };
 
         this._docs.push(doc);
-        this._history[location] = true;
+        this._history[loc] = true;
         
         callback(null, doc);
     }
 };
 
 /**
- * Get an doc to process.
+ * Get a document to process.
  */
 Queue.prototype.get = function (callback) {
     for (var i = 0, doc; !doc && 
@@ -70,7 +70,7 @@ Queue.prototype.get = function (callback) {
 };
 
 /**
- * End processing of doc.
+ * End processing of a document.
  */
 Queue.prototype.end = function (doc, callback) {
     doc.processing = false;

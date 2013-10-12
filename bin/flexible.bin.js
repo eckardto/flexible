@@ -3,8 +3,8 @@
 'use strict';
 
 var argv = require('optimist')
-    .usage('Crawl the web using the Flexible ' + 
-           'module for Node.js.\nUsage: $0')
+    .usage('Crawl the web using Flexible ' + 
+           'for node.\nUsage: $0')
 
     .alias('url', 'uri')
     .string('url')
@@ -122,9 +122,7 @@ if (argv['pg-uri']) {
 
 if (argv.controls) {
     process.stdin.on('data', function (s) {
-        s = s.toString();
-
-        if (s > '\x1a') {return;}
+        if (s = s.toString() > '\x1a') {return;}
 
         var char_code = s.charCodeAt(0) + 
             'a'.charCodeAt(0) - 1;

@@ -38,12 +38,12 @@ Queue.prototype._setup = function (callback) {
 };
 
 /**
- * Add an doc to the queue.
+ * Add a document to the queue.
  */
-Queue.prototype.add = function (location, callback) {
+Queue.prototype.add = function (loc, callback) {
     var doc = {
         queue: this, 
-        url: location, 
+        url: loc, 
         processing: false, 
         completed: false
     };
@@ -60,7 +60,7 @@ Queue.prototype.add = function (location, callback) {
                 if (error.code === '42P01') {
                     self._setup(function (error) {
                         if (error) {callback(error);}
-                        else {self.add(location, callback);}
+                        else {self.add(loc, callback);}
                     });
                 } else if (error.code === '23505') {
                     callback(null, doc);
@@ -71,7 +71,7 @@ Queue.prototype.add = function (location, callback) {
 };
 
 /**
- * Get an doc to process.
+ * Get a document to process.
  */
 Queue.prototype.get = function (callback) {
     var query = 'UPDATE queue SET processing = true WHERE ' +
@@ -103,7 +103,7 @@ Queue.prototype.get = function (callback) {
 };
 
 /**
- * End processing of doc.
+ * End processing of a document.
  */
 Queue.prototype.end = function (doc, callback) {
     doc.processing = false;

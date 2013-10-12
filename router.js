@@ -22,6 +22,7 @@
 
 var async = require('async');
 var url = require('url');
+var pathToRegexp = require('path-to-regexp');
 
 /**
  * Router middleware (wildcards, placeholders, etc).
@@ -31,44 +32,21 @@ module.exports = function () {
         crawler._routes = [];
 
         crawler.route = function (pattern, route) {
-            var placeholders = [], regex;
-            if (pattern instanceof RegExp) {regex = pattern;}
-            else if (pattern === '*') {regex = /.*/;}
-            else {
-                var parsed_pattern = url.parse(pattern);
-                if (!parsed_pattern.hostname) {
-                    if (pattern.charAt(0) !== '/') {
-                        pattern = '/' + pattern;
-                    }
-
-                    pattern = '*' + pattern;
-                }
-
-                var replace = function (match, operator, placeholder) {
-                    if (placeholder) {placeholders.push(placeholder);}
-                    
-                    return operator === '*' ? '(.*?)' : '([^/#?]*)';
-                };
-                pattern = pattern.replace(/([:*])([\w\-]+)?/g, replace);
-                regex = new RegExp('^' + pattern + '$');
-            }
+            var placeholders = [];
+            var regex = pattern instanceof RegExp ? pattern :
+                pathToRegexp(pattern, placeholders);
             
             crawler._routes.push({
-                route: route, match: function (location) {
-                    var parsed_location = url.parse(location);
-                    if (parsed_location.search) {
-                        location = location
-                            .replace(parsed_location.search, '');
-                    }
-
-                    var results = location.match(regex);
+                route: route, match: function (loc) {
+                    var parsed_loc = url.parse(loc);
+                    var results = loc.match(regex);
                     if (!results) {return;}
 
                     for (var params = {}, i = 1; 
                          i < results.length; i++) {
                         var placeholder = placeholders[i - 1];
                         if (placeholder) {
-                            params[placeholder] = results[i];
+                            params[placeholder.name] = results[i];
                         }
                     }
 

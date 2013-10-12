@@ -1,8 +1,8 @@
 {
     "name": "flexible",
-    "description": "Easily build flexible, scalable, and distributed, web crawlers for Node.js.",
+    "description": "Easily build web crawlers.",
     "homepage": "https://github.com/eckardto/flexible",
-    "version": "0.1.12",
+    "version": "0.1.12.1",
 
     "author": {
         "name": "Eckardt Olson",
@@ -19,7 +19,10 @@
     },
 
     "main": "./index.js",
-    "bin": {"flexible": "bin/flexible.bin.js"},
+
+    "bin": {
+        "flexible": "bin/flexible.bin.js"
+    },
 
     "keywords": [
         "flexible",
@@ -53,6 +56,7 @@
         "iconv-lite": "*",
         "htmlparser": "*",
         "traverse": "*",
+        "path-to-regexp": "*",
         "pg": "*",
         "optimist": "*"
     }
