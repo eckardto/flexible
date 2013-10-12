@@ -2,7 +2,7 @@
     "name": "flexible",
     "description": "Easily build web crawlers.",
     "homepage": "https://github.com/eckardto/flexible",
-    "version": "0.1.12.1",
+    "version": "0.1.20",
 
     "author": {
         "name": "Eckardt Olson",

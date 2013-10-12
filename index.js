@@ -88,7 +88,7 @@ function Crawler(options) {
     this._proxy = options.proxy;
     this._headers = options.headers || {
         'user-agent': 'Mozilla/5.0 (compatible; ' + 
-            'Node.js/Flexible 0.1.12.1; https://' +
+            'Node.js/Flexible 0.1.20; https://' +
             'github.com/eckardto/flexible)',
     };
     this._timeout = options.timeout;
