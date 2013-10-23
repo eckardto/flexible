@@ -29,9 +29,7 @@ var crawler = flexible('http://www.example.com/')
     })
     
     .on('error', function (error) {
-        if (error.message) {
-            console.error('Error:', error.message);
-        } else {console.error(error);}
+        console.error('Error:', error.message);
     });
 
 ```
