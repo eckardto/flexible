@@ -31,8 +31,8 @@ var crawler = flexible('http://www.example.com/')
     .on('error', function (error) {
         console.error('Error:', error.message);
     });
-
 ```
+
 ## Features
 * Asynchronous friendly, and evented, API for easily building flexible, scalable, and distributed web crawlers.
 * An array based queue for small crawls, and a PostgreSQL based queue for massive, and efficient, crawls.
