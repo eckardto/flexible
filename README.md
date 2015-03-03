@@ -1,4 +1,4 @@
-### This project will soon be superseded by [node-web-crawler](https://github.com/eckardto/node-web-crawler).
+### This project will soon be superseded by [node-web-crawler](https://github.com/ecdeveloper/node-web-crawler).
 
 Flexible Web Crawler
 ====================
